@@ -1,0 +1,4435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>St. Margaret's Fish Bar - Complete Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        :root {
+            --primary-red: #d32f2f;
+            --dark-red: #b71c1c;
+            --light-red: #ff6659;
+            --black: #121212;
+            --dark-gray: #212121;
+            --gray: #424242;
+            --light-gray: #757575;
+            --white: #ffffff;
+            --off-white: #f5f5f5;
+            --success: #4caf50;
+            --warning: #ff9800;
+            --info: #2196f3;
+            --kitchen-orange: #ff5722;
+            --delivery-blue: #2196f3;
+        }
+        
+        body {
+            background-color: var(--black);
+            color: var(--off-white);
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        /* Header Styles */
+        header {
+            background-color: var(--black);
+            color: var(--white);
+            padding: 1.2rem 0;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.5);
+            border-bottom: 3px solid var(--primary-red);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo-icon {
+            font-size: 2.5rem;
+            color: var(--primary-red);
+        }
+        
+        .logo-text h1 {
+            font-size: 1.6rem;
+            margin-bottom: 5px;
+            color: var(--white);
+        }
+        
+        .logo-text p {
+            color: var(--light-gray);
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .user-info span {
+            color: var(--light-gray);
+        }
+        
+        .logout-btn {
+            background-color: var(--dark-gray);
+            color: var(--white);
+            padding: 8px 15px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        
+        .logout-btn:hover {
+            background-color: var(--primary-red);
+        }
+        
+        /* Navigation Tabs */
+        .tabs {
+            display: flex;
+            background-color: var(--dark-gray);
+            border-bottom: 2px solid var(--primary-red);
+            overflow-x: auto;
+        }
+        
+        .tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            color: var(--light-gray);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border-right: 1px solid var(--gray);
+        }
+        
+        .tab.active {
+            background-color: var(--primary-red);
+            color: var(--white);
+        }
+        
+        .tab:hover:not(.active) {
+            background-color: var(--gray);
+            color: var(--white);
+        }
+        
+        /* Sub Tabs */
+        .sub-tabs {
+            display: flex;
+            background-color: var(--dark-gray);
+            border-bottom: 1px solid var(--gray);
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+        
+        .sub-tab {
+            padding: 12px 20px;
+            background: none;
+            border: none;
+            color: var(--light-gray);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            white-space: nowrap;
+            border-right: 1px solid var(--gray);
+        }
+        
+        .sub-tab.active {
+            background-color: var(--gray);
+            color: var(--white);
+            border-bottom: 3px solid var(--primary-red);
+        }
+        
+        .sub-tab:hover:not(.active) {
+            background-color: var(--gray);
+            color: var(--white);
+        }
+        
+        /* Main Content */
+        .main-content {
+            padding: 30px 0;
+            min-height: calc(100vh - 180px);
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Dashboard Cards */
+        .dashboard-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .card {
+            background-color: var(--dark-gray);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-left: 5px solid var(--primary-red);
+        }
+        
+        .card h3 {
+            font-size: 1rem;
+            color: var(--light-gray);
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .card .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--white);
+            margin-bottom: 5px;
+        }
+        
+        .card .trend {
+            font-size: 0.9rem;
+        }
+        
+        .card .trend.up {
+            color: var(--success);
+        }
+        
+        .card .trend.down {
+            color: var(--primary-red);
+        }
+        
+        /* Kitchen View Cards */
+        .kitchen-orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .kitchen-order-card {
+            background-color: var(--dark-gray);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-left: 5px solid var(--kitchen-orange);
+            position: relative;
+        }
+        
+        .kitchen-order-card.urgent {
+            border-left: 5px solid var(--primary-red);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(255, 87, 34, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 87, 34, 0); }
+        }
+        
+        .kitchen-order-card.completed {
+            border-left: 5px solid var(--success);
+        }
+        
+        .timer-display {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--kitchen-orange);
+        }
+        
+        .timer-display.warning {
+            color: var(--warning);
+        }
+        
+        .timer-display.danger {
+            color: var(--primary-red);
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        /* Orders Grid */
+        .orders-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 25px;
+        }
+        
+        .order-card {
+            background-color: var(--dark-gray);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            border-left: 5px solid var(--primary-red);
+        }
+        
+        .order-card.pending {
+            border-left: 5px solid var(--warning);
+        }
+        
+        .order-card.preparing {
+            border-left: 5px solid var(--kitchen-orange);
+        }
+        
+        .order-card.completed {
+            border-left: 5px solid var(--success);
+        }
+        
+        .order-card.delivery {
+            border-left: 5px solid var(--delivery-blue);
+        }
+        
+        .order-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .order-id {
+            font-weight: 700;
+            color: var(--white);
+            font-size: 1.2rem;
+        }
+        
+        .order-time {
+            color: var(--light-gray);
+            font-size: 0.9rem;
+        }
+        
+        .order-items {
+            margin-bottom: 20px;
+        }
+        
+        .order-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed var(--gray);
+        }
+        
+        .order-total {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--white);
+            padding-top: 15px;
+            border-top: 2px solid var(--gray);
+        }
+        
+        /* Charts Container */
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .chart-box {
+            background-color: var(--dark-gray);
+            border-radius: 8px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        
+        .chart-box h3 {
+            color: var(--white);
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            border-bottom: 2px solid var(--primary-red);
+            padding-bottom: 10px;
+        }
+        
+        /* Tables */
+        .table-container {
+            background-color: var(--dark-gray);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        thead {
+            background-color: var(--primary-red);
+        }
+        
+        th {
+            padding: 15px;
+            text-align: left;
+            color: var(--white);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        tbody tr {
+            border-bottom: 1px solid var(--gray);
+            transition: background-color 0.3s;
+        }
+        
+        tbody tr:hover {
+            background-color: var(--gray);
+        }
+        
+        td {
+            padding: 15px;
+            color: var(--off-white);
+        }
+        
+        /* Forms */
+        .form-container {
+            background-color: var(--dark-gray);
+            border-radius: 8px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--white);
+            font-weight: 600;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            background-color: var(--black);
+            border: 1px solid var(--gray);
+            border-radius: 5px;
+            color: var(--white);
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-red);
+        }
+        
+        .btn {
+            padding: 12px 25px;
+            background-color: var(--primary-red);
+            color: var(--white);
+            border: none;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 1rem;
+        }
+        
+        .btn:hover {
+            background-color: var(--dark-red);
+            box-shadow: 0 5px 15px rgba(211, 47, 47, 0.3);
+        }
+        
+        .btn-secondary {
+            background-color: var(--gray);
+        }
+        
+        .btn-secondary:hover {
+            background-color: var(--light-gray);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+        }
+        
+        .btn-success:hover {
+            background-color: #3d8b40;
+        }
+        
+        .btn-warning {
+            background-color: var(--warning);
+        }
+        
+        .btn-warning:hover {
+            background-color: #e68900;
+        }
+        
+        .btn-info {
+            background-color: var(--info);
+        }
+        
+        .btn-info:hover {
+            background-color: #0b7dda;
+        }
+        
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 0.9rem;
+        }
+        
+        /* Filters */
+        .filters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background-color: var(--dark-gray);
+            border-radius: 8px;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+        }
+        
+        /* Login Page */
+        .login-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), url('https://images.unsplash.com/photo-1579208030886-b937da0925dc?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80');
+            background-size: cover;
+            background-position: center;
+        }
+        
+        .login-box {
+            background-color: var(--dark-gray);
+            border-radius: 10px;
+            padding: 40px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border-top: 5px solid var(--primary-red);
+        }
+        
+        .login-box h2 {
+            text-align: center;
+            color: var(--white);
+            margin-bottom: 30px;
+            font-size: 1.8rem;
+        }
+        
+        /* Status Badges */
+        .status-badge {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background-color: #fff3cd;
+            color: #856404;
+        }
+        
+        .status-preparing {
+            background-color: #cce5ff;
+            color: #004085;
+        }
+        
+        .status-ready {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-completed {
+            background-color: #d4edda;
+            color: #155724;
+        }
+        
+        .status-delivery {
+            background-color: #d1ecf1;
+            color: #0c5460;
+        }
+        
+        /* Action Buttons */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .mt-20 { margin-top: 20px; }
+        .mt-30 { margin-top: 30px; }
+        .mb-20 { margin-bottom: 20px; }
+        .mb-30 { margin-bottom: 30px; }
+        .d-flex { display: flex; }
+        .justify-between { justify-content: space-between; }
+        .align-center { align-items: center; }
+        .gap-10 { gap: 10px; }
+        .gap-20 { gap: 20px; }
+        
+        /* Auto-refresh Indicator */
+        .auto-refresh-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background-color: var(--success);
+            border-radius: 50%;
+            margin-left: 10px;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Notification Sound Icon */
+        .sound-toggle {
+            cursor: pointer;
+            color: var(--light-gray);
+            transition: color 0.3s;
+        }
+        
+        .sound-toggle.active {
+            color: var(--success);
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 1100px) {
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .tabs {
+                overflow-x: scroll;
+            }
+            
+            .tab {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+            
+            .dashboard-cards {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .card .value {
+                font-size: 2rem;
+            }
+            
+            .orders-grid, .kitchen-orders-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .chart-box {
+                padding: 15px;
+            }
+            
+            .sub-tabs {
+                overflow-x: scroll;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .dashboard-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .filters {
+                flex-direction: column;
+            }
+            
+            .filter-group {
+                min-width: 100%;
+            }
+            
+            .action-buttons {
+                flex-wrap: wrap;
+            }
+        }
+        
+        /* Scrollbar Styling */
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--black);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-red);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--dark-red);
+        }
+        
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: var(--dark-gray);
+            padding: 30px;
+            border-radius: 8px;
+            width: 500px;
+            max-width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .modal-title {
+            color: var(--white);
+            font-size: 1.5rem;
+        }
+        
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--light-gray);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        
+        .close-modal:hover {
+            color: var(--white);
+        }
+        
+        /* Cooking Time Settings */
+        .cooking-time-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--gray);
+        }
+        
+        .cooking-time-name {
+            flex: 1;
+        }
+        
+        .cooking-time-input {
+            width: 100px;
+            padding: 8px;
+            background-color: var(--black);
+            border: 1px solid var(--gray);
+            border-radius: 5px;
+            color: var(--white);
+        }
+        
+        /* Audio Notification */
+        #notification-sound {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Audio for notifications -->
+    <audio id="notification-sound" preload="auto">
+        <source src="https://assets.mixkit.co/sfx/preview/mixkit-kitchen-timer-1006.mp3" type="audio/mpeg">
+    </audio>
+    
+    <!-- Login Screen (Initial View) -->
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <h2>St. Margaret's Fish Bar</h2>
+            <h3 style="text-align: center; color: var(--light-gray); margin-bottom: 30px;">Management System Login</h3>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" class="form-control" placeholder="Enter admin username">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" class="form-control" placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <button id="login-btn" class="btn" style="width: 100%;">Login</button>
+            </div>
+            <p style="text-align: center; color: var(--light-gray); margin-top: 20px; font-size: 0.9rem;">
+                Default admin credentials: Username: <strong>admin</strong> | Password: <strong>Admin@123</strong>
+            </p>
+        </div>
+    </div>
+    
+    <!-- Main Application (Hidden until login) -->
+    <div id="app" style="display: none;">
+        <!-- Header -->
+        <header>
+            <div class="container">
+                <div class="header-content">
+                    <div class="logo">
+                        <div class="logo-icon">
+                            <i class="fas fa-fish"></i>
+                        </div>
+                        <div class="logo-text">
+                            <h1>ST. MARGARET'S FISH BAR</h1>
+                            <p>COMPLETE MANAGEMENT SYSTEM</p>
+                        </div>
+                    </div>
+                    
+                    <div class="user-info">
+                        <span id="current-user">Admin User</span>
+                        <span id="current-date"></span>
+                        <i class="fas fa-bell sound-toggle" id="sound-toggle" title="Toggle notification sound"></i>
+                        <a href="#" id="logout-link" class="logout-btn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Navigation Tabs -->
+        <div class="tabs">
+            <button class="tab active" data-tab="dashboard">Dashboard</button>
+            <button class="tab" data-tab="orders">Orders</button>
+            <button class="tab" data-tab="kitchen">Kitchen View</button>
+            <button class="tab" data-tab="staff">Staff Management</button>
+            <button class="tab" data-tab="attendance">Attendance</button>
+            <button class="tab" data-tab="payroll">Payroll</button>
+            <button class="tab" data-tab="reports">Reports</button>
+            <button class="tab" data-tab="settings">Settings</button>
+        </div>
+        
+        <!-- Main Content -->
+        <div class="container main-content">
+            <!-- Dashboard Tab -->
+            <div id="dashboard" class="tab-content active">
+                <div class="d-flex justify-between align-center mb-30">
+                    <h2 style="color: var(--white); font-size: 1.8rem;">Dashboard Overview</h2>
+                    <div class="d-flex align-center">
+                        <span style="color: var(--light-gray); margin-right: 10px;">Auto-refresh: 30s</span>
+                        <div class="auto-refresh-indicator"></div>
+                    </div>
+                </div>
+                
+                <!-- Dashboard Cards -->
+                <div class="dashboard-cards">
+                    <div class="card">
+                        <h3>Today's Revenue</h3>
+                        <div class="value" id="today-revenue">£0.00</div>
+                        <div class="trend up" id="today-trend">+0% vs yesterday</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Monthly Revenue</h3>
+                        <div class="value" id="month-revenue">£0.00</div>
+                        <div class="trend up" id="month-trend">+0% vs last month</div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Active Orders</h3>
+                        <div class="value" id="active-orders">0</div>
+                        <div class="trend">Pending: <span id="pending-orders">0</span></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Kitchen Queue</h3>
+                        <div class="value" id="kitchen-queue">0</div>
+                        <div class="trend">Preparing: <span id="preparing-orders">0</span></div>
+                    </div>
+                </div>
+                
+                <!-- Charts -->
+                <div class="charts-container">
+                    <div class="chart-box">
+                        <h3>Revenue This Week</h3>
+                        <canvas id="revenueChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-box">
+                        <h3>Top Selling Items</h3>
+                        <canvas id="salesChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Recent Orders Table -->
+                <div class="table-container">
+                    <div class="d-flex justify-between align-center" style="padding: 20px; border-bottom: 1px solid var(--gray);">
+                        <h3 style="color: var(--white);">Recent Orders</h3>
+                        <button id="refresh-dashboard" class="btn btn-small">Refresh Now</button>
+                    </div>
+                    <table id="recent-orders-table">
+                        <thead>
+                            <tr>
+                                <th>Order ID</th>
+                                <th>Customer</th>
+                                <th>Type</th>
+                                <th>Items</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Orders Tab -->
+            <div id="orders" class="tab-content">
+                <!-- Sub Tabs for Orders -->
+                <div class="sub-tabs">
+                    <button class="sub-tab active" data-subtab="all-orders">All Orders</button>
+                    <button class="sub-tab" data-subtab="new-order">New Order</button>
+                    <button class="sub-tab" data-subtab="delivery">Delivery Orders</button>
+                    <button class="sub-tab" data-subtab="takeaway">Takeaway Orders</button>
+                </div>
+                
+                <!-- All Orders Sub Tab -->
+                <div id="all-orders" class="sub-tab-content active">
+                    <div class="d-flex justify-between align-center mb-30">
+                        <h2 style="color: var(--white); font-size: 1.8rem;">Order Management</h2>
+                        <div class="d-flex gap-10">
+                            <button id="export-orders" class="btn btn-success">Export CSV</button>
+                            <button id="import-orders" class="btn btn-secondary">Import CSV</button>
+                            <button id="refresh-orders" class="btn">Refresh</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="filters">
+                        <div class="filter-group">
+                            <label>Date Range</label>
+                            <input type="date" id="filter-date-from" class="form-control">
+                        </div>
+                        <div class="filter-group">
+                            <label>To</label>
+                            <input type="date" id="filter-date-to" class="form-control">
+                        </div>
+                        <div class="filter-group">
+                            <label>Order Type</label>
+                            <select id="filter-type" class="form-control">
+                                <option value="all">All Types</option>
+                                <option value="walk-in">Walk-in</option>
+                                <option value="just-eat">Just Eat</option>
+                                <option value="deliveroo">Deliveroo</option>
+                                <option value="uber-eats">Uber Eats</option>
+                                <option value="phone">Phone Order</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select id="filter-status" class="form-control">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="preparing">Preparing</option>
+                                <option value="ready">Ready</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="filter-group d-flex align-center" style="align-self: flex-end;">
+                            <button id="apply-filters" class="btn">Apply</button>
+                            <button id="clear-filters" class="btn btn-secondary">Clear</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Order Cards -->
+                    <div class="orders-grid" id="orders-container">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- New Order Sub Tab -->
+                <div id="new-order" class="sub-tab-content">
+                    <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">Create New Order</h2>
+                    
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label>Order Type</label>
+                            <select id="order-type" class="form-control">
+                                <option value="walk-in">Walk-in</option>
+                                <option value="just-eat">Just Eat</option>
+                                <option value="deliveroo">Deliveroo</option>
+                                <option value="uber-eats">Uber Eats</option>
+                                <option value="phone">Phone Order</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Customer Name</label>
+                            <input type="text" id="customer-name" class="form-control" placeholder="Enter customer name">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Customer Phone</label>
+                            <input type="text" id="customer-phone" class="form-control" placeholder="Enter phone number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Delivery Address (if delivery)</label>
+                            <textarea id="delivery-address" class="form-control" rows="2" placeholder="Enter delivery address"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Select Items</label>
+                            <div class="d-flex gap-10 mb-20" style="flex-wrap: wrap;">
+                                <!-- Menu items will be populated by JavaScript -->
+                            </div>
+                            <div id="selected-items" style="background-color: var(--black); padding: 15px; border-radius: 5px; min-height: 100px; margin-top: 10px;">
+                                <p style="color: var(--light-gray); text-align: center;">No items selected yet</p>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Total Amount</label>
+                            <input type="text" id="order-total" class="form-control" value="£0.00" readonly>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Payment Method</label>
+                            <select id="payment-method" class="form-control">
+                                <option value="cash">Cash</option>
+                                <option value="card">Card</option>
+                                <option value="just-eat">Just Eat</option>
+                                <option value="deliveroo">Deliveroo</option>
+                                <option value="uber-eats">Uber Eats</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Notes/Instructions</label>
+                            <textarea id="order-notes" class="form-control" rows="3" placeholder="Any special instructions or notes"></textarea>
+                        </div>
+                        
+                        <div class="d-flex gap-10">
+                            <button id="submit-order" class="btn">Submit Order</button>
+                            <button id="clear-order" class="btn btn-secondary">Clear Form</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Delivery Orders Sub Tab -->
+                <div id="delivery" class="sub-tab-content">
+                    <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">Delivery Orders</h2>
+                    <div class="orders-grid" id="delivery-orders-container">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <!-- Takeaway Orders Sub Tab -->
+                <div id="takeaway" class="sub-tab-content">
+                    <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">Takeaway Orders</h2>
+                    <div class="orders-grid" id="takeaway-orders-container">
+                        <!-- Will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Kitchen View Tab -->
+            <div id="kitchen" class="tab-content">
+                <div class="d-flex justify-between align-center mb-30">
+                    <h2 style="color: var(--white); font-size: 1.8rem;">Kitchen Management</h2>
+                    <div class="d-flex gap-10">
+                        <button id="refresh-kitchen" class="btn">Refresh Kitchen View</button>
+                        <button id="kitchen-settings" class="btn btn-secondary">Kitchen Settings</button>
+                    </div>
+                </div>
+                
+                <!-- Kitchen Stats -->
+                <div class="dashboard-cards mb-30">
+                    <div class="card">
+                        <h3>Orders Preparing</h3>
+                        <div class="value" id="preparing-count">0</div>
+                        <div class="trend">Avg Time: <span id="avg-prep-time">0m</span></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Orders Ready</h3>
+                        <div class="value" id="ready-count">0</div>
+                        <div class="trend">Waiting: <span id="waiting-count">0</span></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Urgent Orders</h3>
+                        <div class="value" id="urgent-count">0</div>
+                        <div class="trend">Overdue: <span id="overdue-count">0</span></div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3>Kitchen Efficiency</h3>
+                        <div class="value" id="efficiency-rate">0%</div>
+                        <div class="trend">Today: <span id="today-completed">0</span> orders</div>
+                    </div>
+                </div>
+                
+                <!-- Kitchen Orders Grid -->
+                <div class="kitchen-orders-grid" id="kitchen-orders-container">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            
+            <!-- Staff Management Tab -->
+            <div id="staff" class="tab-content">
+                <div class="d-flex justify-between align-center mb-30">
+                    <h2 style="color: var(--white); font-size: 1.8rem;">Staff Management</h2>
+                    <button id="add-staff-btn" class="btn">Add New Staff</button>
+                </div>
+                
+                <div class="table-container">
+                    <table id="staff-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Role</th>
+                                <th>Contact</th>
+                                <th>Hourly Rate</th>
+                                <th>Hours This Week</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Attendance Tab -->
+            <div id="attendance" class="tab-content">
+                <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">Attendance Tracking</h2>
+                
+                <div class="filters mb-30">
+                    <div class="filter-group">
+                        <label>Select Date</label>
+                        <input type="date" id="attendance-date" class="form-control" value="">
+                    </div>
+                    <div class="filter-group">
+                        <label>Select Staff</label>
+                        <select id="attendance-staff" class="form-control">
+                            <option value="all">All Staff</option>
+                        </select>
+                    </div>
+                    <div class="filter-group d-flex align-center" style="align-self: flex-end;">
+                        <button id="mark-attendance" class="btn">Mark Attendance</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="attendance-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Name</th>
+                                <th>Date</th>
+                                <th>Shift Start</th>
+                                <th>Shift End</th>
+                                <th>Hours Worked</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Payroll Tab -->
+            <div id="payroll" class="tab-content">
+                <div class="d-flex justify-between align-center mb-30">
+                    <h2 style="color: var(--white); font-size: 1.8rem;">Payroll Management</h2>
+                    <div class="d-flex gap-10">
+                        <button id="calculate-payroll" class="btn btn-success">Calculate Payroll</button>
+                        <button id="export-payroll" class="btn">Export CSV</button>
+                    </div>
+                </div>
+                
+                <div class="filters mb-30">
+                    <div class="filter-group">
+                        <label>Pay Period</label>
+                        <select id="pay-period" class="form-control">
+                            <option value="this-week">This Week</option>
+                            <option value="last-week">Last Week</option>
+                            <option value="this-month">This Month</option>
+                            <option value="last-month">Last Month</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="custom-date-range" style="display: none;">
+                        <label>From</label>
+                        <input type="date" id="pay-period-from" class="form-control">
+                    </div>
+                    <div class="filter-group" id="custom-date-range-to" style="display: none;">
+                        <label>To</label>
+                        <input type="date" id="pay-period-to" class="form-control">
+                    </div>
+                    <div class="filter-group d-flex align-center" style="align-self: flex-end;">
+                        <button id="generate-payroll" class="btn">Generate</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="payroll-table">
+                        <thead>
+                            <tr>
+                                <th>Staff Name</th>
+                                <th>Hours Worked</th>
+                                <th>Hourly Rate</th>
+                                <th>Gross Pay</th>
+                                <th>Tax</th>
+                                <th>NI</th>
+                                <th>Net Pay</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="card mt-30">
+                    <h3>Payroll Summary</h3>
+                    <div class="d-flex justify-between mt-20">
+                        <div>
+                            <p>Total Gross Pay: <span id="total-gross" style="font-weight: 700; color: var(--white);">£0.00</span></p>
+                            <p>Total Tax: <span id="total-tax" style="color: var(--light-gray);">£0.00</span></p>
+                            <p>Total NI: <span id="total-ni" style="color: var(--light-gray);">£0.00</span></p>
+                        </div>
+                        <div>
+                            <h3 style="color: var(--white);">Total Net Pay</h3>
+                            <div class="value" id="total-net">£0.00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Reports Tab -->
+            <div id="reports" class="tab-content">
+                <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">Reports & Analytics</h2>
+                
+                <div class="filters mb-30">
+                    <div class="filter-group">
+                        <label>Report Type</label>
+                        <select id="report-type" class="form-control">
+                            <option value="sales">Sales Report</option>
+                            <option value="staff">Staff Performance</option>
+                            <option value="inventory">Inventory Report</option>
+                            <option value="financial">Financial Summary</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>Date Range</label>
+                        <select id="report-period" class="form-control">
+                            <option value="today">Today</option>
+                            <option value="yesterday">Yesterday</option>
+                            <option value="this-week">This Week</option>
+                            <option value="last-week">Last Week</option>
+                            <option value="this-month">This Month</option>
+                            <option value="last-month">Last Month</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="filter-group" id="report-custom-range" style="display: none;">
+                        <label>From</label>
+                        <input type="date" id="report-from" class="form-control">
+                    </div>
+                    <div class="filter-group" id="report-custom-range-to" style="display: none;">
+                        <label>To</label>
+                        <input type="date" id="report-to" class="form-control">
+                    </div>
+                    <div class="filter-group d-flex align-center" style="align-self: flex-end;">
+                        <button id="generate-report" class="btn">Generate Report</button>
+                        <button id="export-report" class="btn btn-success">Export CSV</button>
+                    </div>
+                </div>
+                
+                <div class="charts-container">
+                    <div class="chart-box">
+                        <h3 id="report-chart-title">Sales Report</h3>
+                        <canvas id="reportChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-box">
+                        <h3>Data Summary</h3>
+                        <div id="report-summary" style="padding: 20px;">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="table-container mt-30">
+                    <h3 style="padding: 20px; color: var(--white); border-bottom: 1px solid var(--gray);">Detailed Data</h3>
+                    <table id="report-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Order Type</th>
+                                <th>Items Sold</th>
+                                <th>Revenue</th>
+                                <th>Profit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Will be populated by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <!-- Settings Tab -->
+            <div id="settings" class="tab-content">
+                <!-- Sub Tabs for Settings -->
+                <div class="sub-tabs">
+                    <button class="sub-tab active" data-subtab="business-settings">Business Settings</button>
+                    <button class="sub-tab" data-subtab="menu-settings">Menu Settings</button>
+                    <button class="sub-tab" data-subtab="kitchen-settings-tab">Kitchen Settings</button>
+                    <button class="sub-tab" data-subtab="system-settings">System Settings</button>
+                </div>
+                
+                <!-- Business Settings Sub Tab -->
+                <div id="business-settings" class="sub-tab-content active">
+                    <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">Business Settings</h2>
+                    
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label>Business Name</label>
+                            <input type="text" id="business-name" class="form-control" value="St. Margaret's Fish Bar">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Business Address</label>
+                            <textarea id="business-address" class="form-control" rows="3" placeholder="Enter business address"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Business Phone</label>
+                            <input type="text" id="business-phone" class="form-control" placeholder="Enter business phone number">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Business Email</label>
+                            <input type="email" id="business-email" class="form-control" placeholder="Enter business email">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Tax Rate (%)</label>
+                            <input type="number" id="tax-rate" class="form-control" value="20" step="0.1" min="0" max="100">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Service Charge (%)</label>
+                            <input type="number" id="service-charge" class="form-control" value="0" step="0.1" min="0" max="20">
+                        </div>
+                        
+                        <div class="d-flex gap-10 mt-30">
+                            <button id="save-business-settings" class="btn">Save Business Settings</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Menu Settings Sub Tab -->
+                <div id="menu-settings" class="sub-tab-content">
+                    <div class="d-flex justify-between align-center mb-30">
+                        <h2 style="color: var(--white); font-size: 1.8rem;">Menu Items & Pricing</h2>
+                        <button id="add-menu-item" class="btn">Add Menu Item</button>
+                    </div>
+                    
+                    <div class="table-container">
+                        <table id="menu-items-table">
+                            <thead>
+                                <tr>
+                                    <th>Item Name</th>
+                                    <th>Category</th>
+                                    <th>Price (£)</th>
+                                    <th>Cost (£)</th>
+                                    <th>Profit Margin</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Kitchen Settings Sub Tab -->
+                <div id="kitchen-settings-tab" class="sub-tab-content">
+                    <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">Kitchen Settings</h2>
+                    
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label>Default Cooking Times (Minutes)</label>
+                            <div id="cooking-times-container">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Alert Before Cooking Time Ends (Minutes)</label>
+                            <input type="number" id="alert-before-time" class="form-control" value="5" min="1" max="30">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Urgent Order Threshold (Minutes)</label>
+                            <input type="number" id="urgent-threshold" class="form-control" value="10" min="1" max="60">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Auto-refresh Kitchen View (Seconds)</label>
+                            <input type="number" id="kitchen-refresh-rate" class="form-control" value="30" min="5" max="120">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Enable Sound Notifications</label>
+                            <div>
+                                <input type="checkbox" id="enable-sound" checked> <label for="enable-sound">Play sound when order is ready or overdue</label>
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex gap-10 mt-30">
+                            <button id="save-kitchen-settings" class="btn">Save Kitchen Settings</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- System Settings Sub Tab -->
+                <div id="system-settings" class="sub-tab-content">
+                    <h2 style="color: var(--white); margin-bottom: 30px; font-size: 1.8rem;">System Settings</h2>
+                    
+                    <div class="form-container">
+                        <div class="form-group">
+                            <label>Default Order Prefix</label>
+                            <input type="text" id="order-prefix" class="form-control" value="SMFB">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Auto-Archive Orders After (Days)</label>
+                            <input type="number" id="archive-days" class="form-control" value="30" min="1" max="365">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Dashboard Auto-refresh (Seconds)</label>
+                            <input type="number" id="dashboard-refresh-rate" class="form-control" value="30" min="10" max="300">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Default Date Format</label>
+                            <select id="date-format" class="form-control">
+                                <option value="dd/mm/yyyy">DD/MM/YYYY</option>
+                                <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                                <option value="yyyy-mm-dd">YYYY-MM-DD</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Default Time Format</label>
+                            <select id="time-format" class="form-control">
+                                <option value="12h">12-hour (AM/PM)</option>
+                                <option value="24h">24-hour</option>
+                            </select>
+                        </div>
+                        
+                        <h3 style="color: var(--white); margin: 30px 0 15px;">Data Management</h3>
+                        
+                        <div class="d-flex gap-10">
+                            <button id="backup-data" class="btn btn-secondary">Backup All Data</button>
+                            <button id="restore-data" class="btn btn-warning">Restore From Backup</button>
+                            <button id="clear-all-data" class="btn" style="background-color: #dc3545;">Clear All Data</button>
+                        </div>
+                        
+                        <div class="d-flex gap-10 mt-30">
+                            <button id="save-system-settings" class="btn">Save System Settings</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modals -->
+    
+    <!-- Add/Edit Staff Modal -->
+    <div id="staff-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">Add New Staff</h3>
+                <button class="close-modal" id="close-staff-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="staff-name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="staff-role" class="form-control">
+                        <option value="Manager">Manager</option>
+                        <option value="Head Chef">Head Chef</option>
+                        <option value="Chef">Chef</option>
+                        <option value="Kitchen Assistant">Kitchen Assistant</option>
+                        <option value="Server">Server</option>
+                        <option value="Delivery Driver">Delivery Driver</option>
+                        <option value="Cleaner">Cleaner</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" id="staff-phone" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" id="staff-email" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Hourly Rate (£)</label>
+                    <input type="number" id="staff-rate" class="form-control" step="0.01" min="0" value="10.50">
+                </div>
+                <div class="form-group">
+                    <label>Start Date</label>
+                    <input type="date" id="staff-start-date" class="form-control">
+                </div>
+                <div class="d-flex gap-10 mt-20">
+                    <button id="save-staff" class="btn">Save Staff</button>
+                    <button id="cancel-staff" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Add/Edit Menu Item Modal -->
+    <div id="menu-item-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="menu-modal-title">Add Menu Item</h3>
+                <button class="close-modal" id="close-menu-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Item Name</label>
+                    <input type="text" id="menu-item-name" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="menu-item-category" class="form-control">
+                        <option value="Fish">Fish</option>
+                        <option value="Sausages">Sausages</option>
+                        <option value="Pies">Pies</option>
+                        <option value="Burgers">Burgers</option>
+                        <option value="Sides">Sides</option>
+                        <option value="BBQ Chicken">BBQ Chicken</option>
+                        <option value="Specials">Specials</option>
+                        <option value="Extras">Extras</option>
+                        <option value="Drinks">Drinks</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Price (£)</label>
+                    <input type="number" id="menu-item-price" class="form-control" step="0.01" min="0" value="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Cost (£)</label>
+                    <input type="number" id="menu-item-cost" class="form-control" step="0.01" min="0" value="0.00">
+                </div>
+                <div class="form-group">
+                    <label>Default Cooking Time (Minutes)</label>
+                    <input type="number" id="menu-item-cook-time" class="form-control" min="1" max="60" value="10">
+                </div>
+                <div class="form-group">
+                    <label>Description</label>
+                    <textarea id="menu-item-description" class="form-control" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select id="menu-item-status" class="form-control">
+                        <option value="active">Active</option>
+                        <option value="inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-10 mt-20">
+                    <button id="save-menu-item" class="btn">Save Menu Item</button>
+                    <button id="cancel-menu-item" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import CSV Modal -->
+    <div id="import-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Import CSV Data</h3>
+                <button class="close-modal" id="close-import-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Select CSV File</label>
+                    <input type="file" id="csv-file" class="form-control" accept=".csv">
+                </div>
+                <div class="form-group">
+                    <label>Data Type</label>
+                    <select id="import-type" class="form-control">
+                        <option value="orders">Orders</option>
+                        <option value="staff">Staff</option>
+                        <option value="attendance">Attendance</option>
+                        <option value="menu">Menu Items</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Import Mode</label>
+                    <select id="import-mode" class="form-control">
+                        <option value="add">Add New Records Only</option>
+                        <option value="replace">Replace All Records</option>
+                        <option value="update">Update Existing Records</option>
+                    </select>
+                </div>
+                <div class="d-flex gap-10 mt-20">
+                    <button id="confirm-import" class="btn btn-success">Import Data</button>
+                    <button id="cancel-import" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Kitchen Settings Modal -->
+    <div id="kitchen-settings-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Kitchen Display Settings</h3>
+                <button class="close-modal" id="close-kitchen-modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Kitchen Display Mode</label>
+                    <select id="kitchen-display-mode" class="form-control">
+                        <option value="all">Show All Orders</option>
+                        <option value="preparing">Show Only Preparing Orders</option>
+                        <option value="urgent">Show Only Urgent Orders</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Auto-Complete Orders After (Minutes)</label>
+                    <input type="number" id="auto-complete-time" class="form-control" value="10" min="1" max="60">
+                </div>
+                <div class="form-group">
+                    <label>Display Columns</label>
+                    <div>
+                        <input type="checkbox" id="col-order-id" checked> <label for="col-order-id">Order ID</label><br>
+                        <input type="checkbox" id="col-customer" checked> <label for="col-customer">Customer Name</label><br>
+                        <input type="checkbox" id="col-items" checked> <label for="col-items">Items</label><br>
+                        <input type="checkbox" id="col-timer" checked> <label for="col-timer">Timer</label><br>
+                        <input type="checkbox" id="col-notes" checked> <label for="col-notes">Notes</label>
+                    </div>
+                </div>
+                <div class="d-flex gap-10 mt-20">
+                    <button id="save-kitchen-display-settings" class="btn">Save Settings</button>
+                    <button id="cancel-kitchen-settings" class="btn btn-secondary">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Global Variables
+        let currentUser = null;
+        let orders = [];
+        let staff = [];
+        let attendance = [];
+        let menuItems = [];
+        let settings = {};
+        let kitchenSettings = {};
+        let selectedOrderItems = [];
+        let autoRefreshIntervals = {};
+        let soundEnabled = true;
+        let cookingTimers = {};
+        let orderTimers = {};
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set current date
+            updateCurrentDate();
+            
+            // Check if user is already logged in
+            const savedUser = localStorage.getItem('fishbar_user');
+            if (savedUser) {
+                try {
+                    const userData = JSON.parse(savedUser);
+                    if (userData.loggedIn && userData.timestamp > Date.now() - 24*60*60*1000) {
+                        currentUser = userData.username;
+                        showApp();
+                        loadData();
+                        initializeCharts();
+                        startAutoRefresh();
+                    }
+                } catch(e) {
+                    // Invalid saved data, show login
+                }
+            }
+            
+            // Login functionality
+            document.getElementById('login-btn').addEventListener('click', function() {
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+                
+                if (username === 'admin' && password === 'Admin@123') {
+                    currentUser = username;
+                    
+                    // Save login state
+                    localStorage.setItem('fishbar_user', JSON.stringify({
+                        username: username,
+                        loggedIn: true,
+                        timestamp: Date.now()
+                    }));
+                    
+                    showApp();
+                    loadData();
+                    initializeCharts();
+                    startAutoRefresh();
+                } else {
+                    alert('Invalid credentials! Please try again.\n\nDefault: Username: admin, Password: Admin@123');
+                }
+            });
+            
+            // Logout functionality
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                stopAllTimers();
+                clearAllIntervals();
+                localStorage.removeItem('fishbar_user');
+                location.reload();
+            });
+            
+            // Sound toggle
+            document.getElementById('sound-toggle').addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                this.classList.toggle('active', soundEnabled);
+                localStorage.setItem('fishbar_sound_enabled', soundEnabled);
+            });
+            
+            // Initialize all event listeners
+            initEventListeners();
+            
+            // Set sound toggle state
+            const savedSoundSetting = localStorage.getItem('fishbar_sound_enabled');
+            if (savedSoundSetting !== null) {
+                soundEnabled = savedSoundSetting === 'true';
+                document.getElementById('sound-toggle').classList.toggle('active', soundEnabled);
+            }
+        });
+        
+        function showApp() {
+            document.getElementById('login-screen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            document.getElementById('current-user').textContent = currentUser;
+        }
+        
+        function updateCurrentDate() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('en-GB', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            document.getElementById('current-date').textContent = dateStr;
+        }
+        
+        function loadData() {
+            // Load orders from localStorage
+            const savedOrders = localStorage.getItem('fishbar_orders');
+            orders = savedOrders ? JSON.parse(savedOrders) : [];
+            
+            // Load staff from localStorage
+            const savedStaff = localStorage.getItem('fishbar_staff');
+            staff = savedStaff ? JSON.parse(savedStaff) : [];
+            
+            // Load attendance from localStorage
+            const savedAttendance = localStorage.getItem('fishbar_attendance');
+            attendance = savedAttendance ? JSON.parse(savedAttendance) : [];
+            
+            // Load menu items
+            const savedMenu = localStorage.getItem('fishbar_menu');
+            menuItems = savedMenu ? JSON.parse(savedMenu) : getDefaultMenuItems();
+            
+            // Load settings
+            const savedSettings = localStorage.getItem('fishbar_settings');
+            settings = savedSettings ? JSON.parse(savedSettings) : getDefaultSettings();
+            
+            // Load kitchen settings
+            const savedKitchenSettings = localStorage.getItem('fishbar_kitchen_settings');
+            kitchenSettings = savedKitchenSettings ? JSON.parse(savedKitchenSettings) : getDefaultKitchenSettings();
+            
+            // Load cooking timers
+            const savedCookingTimers = localStorage.getItem('fishbar_cooking_timers');
+            cookingTimers = savedCookingTimers ? JSON.parse(savedCookingTimers) : {};
+            
+            // Update UI with loaded data
+            updateDashboard();
+            displayOrders();
+            displayStaff();
+            displayAttendance();
+            displayMenuItems();
+            updateKitchenView();
+            loadSettingsToUI();
+            populateMenuButtons();
+            startOrderTimers();
+        }
+        
+        function saveData() {
+            localStorage.setItem('fishbar_orders', JSON.stringify(orders));
+            localStorage.setItem('fishbar_staff', JSON.stringify(staff));
+            localStorage.setItem('fishbar_attendance', JSON.stringify(attendance));
+            localStorage.setItem('fishbar_menu', JSON.stringify(menuItems));
+            localStorage.setItem('fishbar_settings', JSON.stringify(settings));
+            localStorage.setItem('fishbar_kitchen_settings', JSON.stringify(kitchenSettings));
+            localStorage.setItem('fishbar_cooking_timers', JSON.stringify(cookingTimers));
+        }
+        
+        function getDefaultMenuItems() {
+            return [
+                { id: 1, name: "Cod", category: "Fish", price: 7.30, cost: 3.50, cookTime: 8, status: "active", description: "Fresh Atlantic cod in crispy batter" },
+                { id: 2, name: "Haddock", category: "Fish", price: 8.30, cost: 4.00, cookTime: 8, status: "active", description: "Premium haddock in golden batter" },
+                { id: 3, name: "Rock", category: "Fish", price: 7.80, cost: 3.80, cookTime: 7, status: "active", description: "Fresh rock fish with light crispy batter" },
+                { id: 4, name: "Plaice", category: "Fish", price: 7.80, cost: 3.80, cookTime: 6, status: "active", description: "Delicate plaice with a light crispy coating" },
+                { id: 5, name: "Skate", category: "Fish", price: 8.80, cost: 4.20, cookTime: 10, status: "active", description: "Tender skate wings with a delicate flavor" },
+                { id: 6, name: "Sea Bream", category: "Fish", price: 7.30, cost: 3.50, cookTime: 7, status: "active", description: "Flaky sea bream with a light crispy batter" },
+                { id: 7, name: "Sea Bass", category: "Fish", price: 7.50, cost: 3.60, cookTime: 7, status: "active", description: "Delicate sea bass with crispy golden batter" },
+                { id: 8, name: "Fish Cake", category: "Fish", price: 2.30, cost: 1.10, cookTime: 5, status: "active", description: "Homemade fish cake with potato and herbs" },
+                { id: 9, name: "Chips", category: "Fish", price: 3.00, cost: 0.80, cookTime: 6, status: "active", description: "Freshly cut chips, cooked to perfection" },
+                { id: 10, name: "Jumbo Sausage", category: "Sausages", price: 3.00, cost: 1.20, cookTime: 5, status: "active", description: "Large, meaty sausage" },
+                { id: 11, name: "Battered Sausage", category: "Sausages", price: 3.30, cost: 1.30, cookTime: 6, status: "active", description: "Sausage coated in crispy golden batter" },
+                { id: 12, name: "Saveloy", category: "Sausages", price: 3.00, cost: 1.20, cookTime: 4, status: "active", description: "Traditional red saveloy sausage" },
+                { id: 13, name: "Pukka Pie", category: "Pies", price: 3.80, cost: 1.50, cookTime: 12, status: "active", description: "Traditional meat pie with flaky pastry" },
+                { id: 14, name: "Chicken & Mushroom Pie", category: "Pies", price: 3.80, cost: 1.50, cookTime: 12, status: "active", description: "Creamy chicken and mushroom filling" },
+                { id: 15, name: "Beef & Onion Pie", category: "Pies", price: 3.80, cost: 1.50, cookTime: 12, status: "active", description: "Tender beef with savory onion gravy" },
+                { id: 16, name: "Steak & Kidney Pie", category: "Pies", price: 3.80, cost: 1.50, cookTime: 12, status: "active", description: "Classic British steak and kidney pie" },
+                { id: 17, name: "Plain Burger", category: "Burgers", price: 3.80, cost: 1.50, cookTime: 8, status: "active", description: "Classic beef burger" },
+                { id: 18, name: "Cheese Burger", category: "Burgers", price: 4.00, cost: 1.60, cookTime: 8, status: "active", description: "Beef burger with cheese" },
+                { id: 19, name: "Vegetarian Burger", category: "Burgers", price: 3.80, cost: 1.50, cookTime: 6, status: "active", description: "Vegetarian alternative" },
+                { id: 20, name: "Mushy Peas", category: "Sides", price: 1.80, cost: 0.50, cookTime: 3, status: "active", description: "Traditional mushy peas" },
+                { id: 21, name: "Curry Sauce", category: "Sides", price: 1.80, cost: 0.40, cookTime: 3, status: "active", description: "Traditional curry sauce" },
+                { id: 22, name: "Gravy", category: "Sides", price: 1.80, cost: 0.40, cookTime: 3, status: "active", description: "Rich gravy" },
+                { id: 23, name: "Onion Rings", category: "Sides", price: 2.40, cost: 0.80, cookTime: 4, status: "active", description: "Crispy battered onion rings" },
+                { id: 24, name: "Kids Meal", category: "Specials", price: 7.95, cost: 3.50, cookTime: 10, status: "active", description: "Includes fish, chips, drink and toy" },
+                { id: 25, name: "BBQ Chicken Half", category: "BBQ Chicken", price: 5.50, cost: 2.50, cookTime: 15, status: "active", description: "Succulent half BBQ chicken" },
+                { id: 26, name: "BBQ Chicken Whole", category: "BBQ Chicken", price: 8.50, cost: 3.80, cookTime: 20, status: "active", description: "Whole BBQ chicken, perfect for sharing" }
+            ];
+        }
+        
+        function getDefaultSettings() {
+            return {
+                businessName: "St. Margaret's Fish Bar",
+                businessAddress: "123 Seafood Street, Coastal Town, CT1 2AB",
+                businessPhone: "01234 567890",
+                businessEmail: "info@stmargaretsfishbar.co.uk",
+                taxRate: 20,
+                serviceCharge: 0,
+                orderPrefix: "SMFB",
+                archiveDays: 30,
+                dashboardRefreshRate: 30,
+                dateFormat: "dd/mm/yyyy",
+                timeFormat: "12h"
+            };
+        }
+        
+        function getDefaultKitchenSettings() {
+            return {
+                alertBeforeTime: 5,
+                urgentThreshold: 10,
+                kitchenRefreshRate: 30,
+                enableSound: true,
+                defaultCookingTimes: {},
+                displayMode: "all",
+                autoCompleteTime: 10,
+                displayColumns: {
+                    orderId: true,
+                    customer: true,
+                    items: true,
+                    timer: true,
+                    notes: true
+                }
+            };
+        }
+        
+        function initEventListeners() {
+            // Tab switching
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    // Update active tab
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.getElementById(tabId).classList.add('active');
+                    
+                    // Handle sub-tabs if needed
+                    if (tabId === 'orders' || tabId === 'settings') {
+                        const firstSubTab = document.querySelector(`#${tabId} .sub-tab.active`);
+                        if (firstSubTab) {
+                            const subTabId = firstSubTab.getAttribute('data-subtab');
+                            showSubTab(tabId, subTabId);
+                        }
+                    }
+                    
+                    // Refresh data if needed
+                    if (tabId === 'dashboard') {
+                        updateDashboard();
+                    } else if (tabId === 'orders') {
+                        displayOrders();
+                    } else if (tabId === 'kitchen') {
+                        updateKitchenView();
+                    } else if (tabId === 'staff') {
+                        displayStaff();
+                    } else if (tabId === 'attendance') {
+                        displayAttendance();
+                    } else if (tabId === 'payroll') {
+                        calculatePayroll();
+                    } else if (tabId === 'reports') {
+                        generateReport();
+                    }
+                });
+            });
+            
+            // Sub-tab switching for orders
+            document.querySelectorAll('.sub-tab').forEach(subTab => {
+                subTab.addEventListener('click', function() {
+                    const parentTab = this.closest('.tab-content').id;
+                    const subTabId = this.getAttribute('data-subtab');
+                    
+                    // Update active sub-tab
+                    this.closest('.sub-tabs').querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // Show corresponding content
+                    showSubTab(parentTab, subTabId);
+                });
+            });
+            
+            // Close modal buttons
+            document.querySelectorAll('.close-modal').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    this.closest('.modal').style.display = 'none';
+                });
+            });
+            
+            // Cancel buttons in modals
+            document.getElementById('cancel-staff').addEventListener('click', () => hideModal('staff-modal'));
+            document.getElementById('cancel-menu-item').addEventListener('click', () => hideModal('menu-item-modal'));
+            document.getElementById('cancel-import').addEventListener('click', () => hideModal('import-modal'));
+            document.getElementById('cancel-kitchen-settings').addEventListener('click', () => hideModal('kitchen-settings-modal'));
+            
+            // Order management
+            document.getElementById('submit-order').addEventListener('click', submitOrder);
+            document.getElementById('clear-order').addEventListener('click', clearOrderForm);
+            document.getElementById('refresh-orders').addEventListener('click', displayOrders);
+            document.getElementById('refresh-dashboard').addEventListener('click', updateDashboard);
+            document.getElementById('refresh-kitchen').addEventListener('click', updateKitchenView);
+            
+            // Export/Import buttons
+            document.getElementById('export-orders').addEventListener('click', exportOrdersToCSV);
+            document.getElementById('import-orders').addEventListener('click', showImportModal);
+            document.getElementById('confirm-import').addEventListener('click', importCSV);
+            
+            // Staff management
+            document.getElementById('add-staff-btn').addEventListener('click', showStaffModal);
+            document.getElementById('save-staff').addEventListener('click', saveStaffMember);
+            
+            // Attendance
+            document.getElementById('mark-attendance').addEventListener('click', markAttendance);
+            
+            // Payroll
+            document.getElementById('calculate-payroll').addEventListener('click', calculatePayroll);
+            document.getElementById('generate-payroll').addEventListener('click', calculatePayroll);
+            document.getElementById('export-payroll').addEventListener('click', exportPayrollToCSV);
+            
+            // Reports
+            document.getElementById('generate-report').addEventListener('click', generateReport);
+            document.getElementById('export-report').addEventListener('click', exportReportToCSV);
+            
+            // Settings
+            document.getElementById('save-business-settings').addEventListener('click', saveBusinessSettings);
+            document.getElementById('save-system-settings').addEventListener('click', saveSystemSettings);
+            document.getElementById('save-kitchen-settings').addEventListener('click', saveKitchenSettings);
+            document.getElementById('add-menu-item').addEventListener('click', showMenuItemModal);
+            document.getElementById('save-menu-item').addEventListener('click', saveMenuItem);
+            document.getElementById('kitchen-settings').addEventListener('click', showKitchenSettingsModal);
+            document.getElementById('save-kitchen-display-settings').addEventListener('click', saveKitchenDisplaySettings);
+            
+            // Data management
+            document.getElementById('backup-data').addEventListener('click', backupData);
+            document.getElementById('restore-data').addEventListener('click', restoreData);
+            document.getElementById('clear-all-data').addEventListener('click', clearAllData);
+            
+            // Filters
+            document.getElementById('apply-filters').addEventListener('click', applyOrderFilters);
+            document.getElementById('clear-filters').addEventListener('click', clearOrderFilters);
+            
+            // Pay period selector
+            document.getElementById('pay-period').addEventListener('change', function() {
+                const isCustom = this.value === 'custom';
+                document.getElementById('custom-date-range').style.display = isCustom ? 'block' : 'none';
+                document.getElementById('custom-date-range-to').style.display = isCustom ? 'block' : 'none';
+            });
+            
+            // Report period selector
+            document.getElementById('report-period').addEventListener('change', function() {
+                const isCustom = this.value === 'custom';
+                document.getElementById('report-custom-range').style.display = isCustom ? 'block' : 'none';
+                document.getElementById('report-custom-range-to').style.display = isCustom ? 'block' : 'none';
+            });
+            
+            // Close modals when clicking outside
+            window.addEventListener('click', function(event) {
+                if (event.target.classList.contains('modal')) {
+                    event.target.style.display = 'none';
+                }
+            });
+        }
+        
+        function showSubTab(parentTab, subTabId) {
+            // Hide all sub-tab contents in this parent tab
+            document.querySelectorAll(`#${parentTab} .sub-tab-content`).forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Show selected sub-tab content
+            document.getElementById(subTabId).classList.add('active');
+            
+            // Refresh content if needed
+            if (subTabId === 'all-orders') {
+                displayOrders();
+            } else if (subTabId === 'delivery') {
+                displayDeliveryOrders();
+            } else if (subTabId === 'takeaway') {
+                displayTakeawayOrders();
+            } else if (subTabId === 'menu-settings') {
+                displayMenuItems();
+            }
+        }
+        
+        function showModal(modalId) {
+            document.getElementById(modalId).style.display = 'flex';
+        }
+        
+        function hideModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+        }
+        
+        function updateDashboard() {
+            const today = new Date().toISOString().split('T')[0];
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1);
+            const yesterdayStr = yesterday.toISOString().split('T')[0];
+            
+            // Calculate today's revenue
+            const todayOrders = orders.filter(order => order.timestamp.split('T')[0] === today);
+            const todayRevenue = todayOrders.reduce((sum, order) => sum + order.total, 0);
+            document.getElementById('today-revenue').textContent = `£${todayRevenue.toFixed(2)}`;
+            
+            // Calculate yesterday's revenue for comparison
+            const yesterdayOrders = orders.filter(order => order.timestamp.split('T')[0] === yesterdayStr);
+            const yesterdayRevenue = yesterdayOrders.reduce((sum, order) => sum + order.total, 0);
+            const todayTrend = yesterdayRevenue > 0 ? ((todayRevenue - yesterdayRevenue) / yesterdayRevenue * 100).toFixed(1) : 0;
+            document.getElementById('today-trend').textContent = `${todayTrend >= 0 ? '+' : ''}${todayTrend}% vs yesterday`;
+            document.getElementById('today-trend').className = `trend ${todayTrend >= 0 ? 'up' : 'down'}`;
+            
+            // Calculate monthly revenue
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+            const monthOrders = orders.filter(order => {
+                const orderDate = new Date(order.timestamp);
+                return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+            });
+            const monthRevenue = monthOrders.reduce((sum, order) => sum + order.total, 0);
+            document.getElementById('month-revenue').textContent = `£${monthRevenue.toFixed(2)}`;
+            
+            // Calculate last month's revenue for comparison
+            const lastMonth = currentMonth === 0 ? 11 : currentMonth - 1;
+            const lastMonthYear = currentMonth === 0 ? currentYear - 1 : currentYear;
+            const lastMonthOrders = orders.filter(order => {
+                const orderDate = new Date(order.timestamp);
+                return orderDate.getMonth() === lastMonth && orderDate.getFullYear() === lastMonthYear;
+            });
+            const lastMonthRevenue = lastMonthOrders.reduce((sum, order) => sum + order.total, 0);
+            const monthTrend = lastMonthRevenue > 0 ? ((monthRevenue - lastMonthRevenue) / lastMonthRevenue * 100).toFixed(1) : 0;
+            document.getElementById('month-trend').textContent = `${monthTrend >= 0 ? '+' : ''}${monthTrend}% vs last month`;
+            document.getElementById('month-trend').className = `trend ${monthTrend >= 0 ? 'up' : 'down'}`;
+            
+            // Active orders
+            const activeOrders = orders.filter(order => order.status !== 'completed' && order.status !== 'cancelled');
+            document.getElementById('active-orders').textContent = activeOrders.length;
+            
+            // Pending orders
+            const pendingOrders = orders.filter(order => order.status === 'pending');
+            document.getElementById('pending-orders').textContent = pendingOrders.length;
+            
+            // Kitchen queue
+            const kitchenQueue = orders.filter(order => order.status === 'preparing');
+            document.getElementById('kitchen-queue').textContent = kitchenQueue.length;
+            
+            // Preparing orders
+            const preparingOrders = orders.filter(order => order.status === 'preparing');
+            document.getElementById('preparing-orders').textContent = preparingOrders.length;
+            
+            // Update recent orders table
+            updateRecentOrdersTable();
+        }
+        
+        function updateRecentOrdersTable() {
+            const tableBody = document.getElementById('recent-orders-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            // Get recent orders (last 10)
+            const recentOrders = [...orders]
+                .sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp))
+                .slice(0, 10);
+            
+            recentOrders.forEach(order => {
+                const row = document.createElement('tr');
+                const orderDate = new Date(order.timestamp);
+                const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                
+                // Count total items
+                const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+                
+                row.innerHTML = `
+                    <td>${order.id}</td>
+                    <td>${order.customer}</td>
+                    <td>${formatOrderType(order.type)}</td>
+                    <td>${itemCount} items</td>
+                    <td>£${order.total.toFixed(2)}</td>
+                    <td><span class="status-badge status-${order.status}">${order.status}</span></td>
+                    <td>${timeString}</td>
+                `;
+                
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function displayOrders() {
+            const container = document.getElementById('orders-container');
+            container.innerHTML = '';
+            
+            // Apply filters if any
+            let filteredOrders = [...orders];
+            
+            const dateFrom = document.getElementById('filter-date-from').value;
+            const dateTo = document.getElementById('filter-date-to').value;
+            const typeFilter = document.getElementById('filter-type').value;
+            const statusFilter = document.getElementById('filter-status').value;
+            
+            if (dateFrom) {
+                filteredOrders = filteredOrders.filter(order => order.timestamp.split('T')[0] >= dateFrom);
+            }
+            
+            if (dateTo) {
+                filteredOrders = filteredOrders.filter(order => order.timestamp.split('T')[0] <= dateTo);
+            }
+            
+            if (typeFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(order => order.type === typeFilter);
+            }
+            
+            if (statusFilter !== 'all') {
+                filteredOrders = filteredOrders.filter(order => order.status === statusFilter);
+            }
+            
+            // Sort by most recent first
+            filteredOrders.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            // Display orders as cards
+            filteredOrders.forEach(order => {
+                const orderCard = createOrderCard(order);
+                container.appendChild(orderCard);
+            });
+            
+            if (filteredOrders.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align: center; padding: 40px;"><h3>No orders found</h3><p>Try adjusting your filters</p></div>';
+            }
+        }
+        
+        function displayDeliveryOrders() {
+            const container = document.getElementById('delivery-orders-container');
+            container.innerHTML = '';
+            
+            const deliveryOrders = orders.filter(order => 
+                order.type === 'just-eat' || order.type === 'deliveroo' || order.type === 'uber-eats'
+            ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            deliveryOrders.forEach(order => {
+                const orderCard = createOrderCard(order);
+                container.appendChild(orderCard);
+            });
+            
+            if (deliveryOrders.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align: center; padding: 40px;"><h3>No delivery orders found</h3></div>';
+            }
+        }
+        
+        function displayTakeawayOrders() {
+            const container = document.getElementById('takeaway-orders-container');
+            container.innerHTML = '';
+            
+            const takeawayOrders = orders.filter(order => 
+                order.type === 'walk-in' || order.type === 'phone'
+            ).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            
+            takeawayOrders.forEach(order => {
+                const orderCard = createOrderCard(order);
+                container.appendChild(orderCard);
+            });
+            
+            if (takeawayOrders.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align: center; padding: 40px;"><h3>No takeaway orders found</h3></div>';
+            }
+        }
+        
+        function createOrderCard(order) {
+            const card = document.createElement('div');
+            card.className = `order-card ${order.status}`;
+            
+            const orderDate = new Date(order.timestamp);
+            const dateString = orderDate.toLocaleDateString('en-GB');
+            const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Calculate item count
+            const itemCount = order.items.reduce((sum, item) => sum + item.quantity, 0);
+            
+            // Create items HTML
+            let itemsHTML = '';
+            order.items.forEach(item => {
+                itemsHTML += `
+                    <div class="order-item">
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span>£${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+            
+            // Calculate preparation time if applicable
+            let prepTimeInfo = '';
+            if (order.status === 'preparing' && order.kitchenStartTime) {
+                const startTime = new Date(order.kitchenStartTime);
+                const now = new Date();
+                const minutesElapsed = Math.floor((now - startTime) / 60000);
+                prepTimeInfo = `<div style="margin-top: 10px; color: var(--kitchen-orange);"><i class="fas fa-clock"></i> Preparing for ${minutesElapsed} minutes</div>`;
+            }
+            
+            card.innerHTML = `
+                <div class="order-header">
+                    <div>
+                        <div class="order-id">${order.id}</div>
+                        <div class="order-time">${dateString} at ${timeString}</div>
+                    </div>
+                    <div>
+                        <span class="status-badge status-${order.status}">${order.status}</span>
+                    </div>
+                </div>
+                
+                <div class="order-items">
+                    <div style="margin-bottom: 10px;">
+                        <strong>Customer:</strong> ${order.customer} (${order.phone})<br>
+                        <strong>Type:</strong> ${formatOrderType(order.type)}<br>
+                        <strong>Payment:</strong> ${formatPaymentMethod(order.payment)}
+                        ${order.deliveryAddress ? `<br><strong>Delivery:</strong> ${order.deliveryAddress}` : ''}
+                    </div>
+                    ${itemsHTML}
+                    ${prepTimeInfo}
+                </div>
+                
+                <div class="order-total">
+                    <span>Total:</span>
+                    <span>£${order.total.toFixed(2)}</span>
+                </div>
+                
+                ${order.notes ? `<div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--gray);"><strong>Notes:</strong> ${order.notes}</div>` : ''}
+                
+                <div class="action-buttons">
+                    ${order.status === 'pending' ? `<button class="btn btn-small" onclick="startOrderPreparation('${order.id}')">Start Preparing</button>` : ''}
+                    ${order.status === 'preparing' ? `<button class="btn btn-small btn-success" onclick="markOrderReady('${order.id}')">Mark as Ready</button>` : ''}
+                    ${order.status === 'ready' ? `<button class="btn btn-small btn-info" onclick="completeOrder('${order.id}')">Complete Order</button>` : ''}
+                    ${order.status !== 'completed' && order.status !== 'cancelled' ? `<button class="btn btn-small btn-warning" onclick="cancelOrder('${order.id}')">Cancel</button>` : ''}
+                    <button class="btn btn-small btn-secondary" onclick="editOrder('${order.id}')">Edit</button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function startOrderPreparation(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'preparing';
+                order.kitchenStartTime = new Date().toISOString();
+                
+                // Calculate expected completion time based on items
+                let maxCookTime = 0;
+                order.items.forEach(item => {
+                    const menuItem = menuItems.find(m => m.name === item.name);
+                    if (menuItem && menuItem.cookTime > maxCookTime) {
+                        maxCookTime = menuItem.cookTime;
+                    }
+                });
+                
+                order.expectedCompletionTime = new Date(Date.now() + maxCookTime * 60000).toISOString();
+                
+                saveData();
+                displayOrders();
+                updateDashboard();
+                updateKitchenView();
+                
+                // Play notification sound if enabled
+                if (soundEnabled) {
+                    playNotificationSound();
+                }
+                
+                // Start timer for this order
+                startOrderTimer(orderId);
+            }
+        }
+        
+        function markOrderReady(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'ready';
+                order.kitchenEndTime = new Date().toISOString();
+                
+                saveData();
+                displayOrders();
+                updateDashboard();
+                updateKitchenView();
+                
+                // Play notification sound if enabled
+                if (soundEnabled) {
+                    playNotificationSound();
+                }
+            }
+        }
+        
+        function completeOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                order.status = 'completed';
+                order.completedTime = new Date().toISOString();
+                
+                saveData();
+                displayOrders();
+                updateDashboard();
+                updateKitchenView();
+                
+                // Stop timer for this order
+                stopOrderTimer(orderId);
+            }
+        }
+        
+        function cancelOrder(orderId) {
+            if (confirm(`Are you sure you want to cancel order ${orderId}?`)) {
+                const order = orders.find(o => o.id === orderId);
+                if (order) {
+                    order.status = 'cancelled';
+                    order.cancelledTime = new Date().toISOString();
+                    
+                    saveData();
+                    displayOrders();
+                    updateDashboard();
+                    updateKitchenView();
+                    
+                    // Stop timer for this order
+                    stopOrderTimer(orderId);
+                }
+            }
+        }
+        
+        function editOrder(orderId) {
+            const order = orders.find(o => o.id === orderId);
+            if (order) {
+                // For now, just show an alert with edit option
+                alert(`Edit order ${orderId}\n\nThis feature would allow editing order details.`);
+                // In a full implementation, this would open a modal with the order form pre-filled
+            }
+        }
+        
+        function populateMenuButtons() {
+            const container = document.querySelector('#new-order .d-flex.gap-10.mb-20');
+            container.innerHTML = '';
+            
+            // Group items by category
+            const itemsByCategory = {};
+            menuItems.forEach(item => {
+                if (item.status === 'active') {
+                    if (!itemsByCategory[item.category]) {
+                        itemsByCategory[item.category] = [];
+                    }
+                    itemsByCategory[item.category].push(item);
+                }
+            });
+            
+            // Create buttons for each item
+            for (const category in itemsByCategory) {
+                // Add category heading
+                const heading = document.createElement('div');
+                heading.style.width = '100%';
+                heading.style.color = 'var(--white)';
+                heading.style.marginTop = '10px';
+                heading.style.marginBottom = '5px';
+                heading.style.fontWeight = 'bold';
+                heading.textContent = category;
+                container.appendChild(heading);
+                
+                // Add buttons for items in this category
+                itemsByCategory[category].forEach(item => {
+                    const button = document.createElement('button');
+                    button.className = 'btn btn-small btn-secondary';
+                    button.dataset.item = item.name;
+                    button.dataset.price = item.price;
+                    button.textContent = `${item.name} (£${item.price.toFixed(2)})`;
+                    button.addEventListener('click', function() {
+                        addItemToOrder(this.dataset.item, parseFloat(this.dataset.price));
+                    });
+                    container.appendChild(button);
+                });
+            }
+        }
+        
+        function addItemToOrder(itemName, price) {
+            // Check if item already exists in order
+            const existingItem = selectedOrderItems.find(item => item.name === itemName);
+            
+            if (existingItem) {
+                existingItem.quantity++;
+            } else {
+                selectedOrderItems.push({
+                    name: itemName,
+                    price: price,
+                    quantity: 1
+                });
+            }
+            
+            updateSelectedItemsDisplay();
+        }
+        
+        function removeItemFromOrder(index) {
+            selectedOrderItems.splice(index, 1);
+            updateSelectedItemsDisplay();
+        }
+        
+        function updateSelectedItemsDisplay() {
+            const container = document.getElementById('selected-items');
+            
+            if (selectedOrderItems.length === 0) {
+                container.innerHTML = '<p style="color: var(--light-gray); text-align: center;">No items selected yet</p>';
+                document.getElementById('order-total').value = '£0.00';
+                return;
+            }
+            
+            let html = '';
+            let total = 0;
+            
+            selectedOrderItems.forEach((item, index) => {
+                const itemTotal = item.price * item.quantity;
+                total += itemTotal;
+                
+                html += `
+                    <div style="display: flex; justify-content: space-between; margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px dashed var(--gray);">
+                        <div>
+                            <strong>${item.quantity}x</strong> ${item.name}
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span>£${itemTotal.toFixed(2)}</span>
+                            <button class="btn btn-small" style="padding: 2px 8px; font-size: 0.8rem;" onclick="removeItemFromOrder(${index})">Remove</button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            document.getElementById('order-total').value = `£${total.toFixed(2)}`;
+        }
+        
+        function submitOrder() {
+            const customerName = document.getElementById('customer-name').value;
+            const customerPhone = document.getElementById('customer-phone').value;
+            const orderType = document.getElementById('order-type').value;
+            const paymentMethod = document.getElementById('payment-method').value;
+            const deliveryAddress = document.getElementById('delivery-address').value;
+            const notes = document.getElementById('order-notes').value;
+            
+            if (!customerName || !customerPhone) {
+                alert('Please enter customer name and phone number');
+                return;
+            }
+            
+            if (selectedOrderItems.length === 0) {
+                alert('Please add at least one item to the order');
+                return;
+            }
+            
+            // Generate order ID
+            const orderId = generateOrderId();
+            
+            // Calculate total
+            let total = selectedOrderItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            
+            // Add service charge if applicable
+            if (settings.serviceCharge > 0) {
+                total += total * (settings.serviceCharge / 100);
+            }
+            
+            // Create order object
+            const newOrder = {
+                id: orderId,
+                type: orderType,
+                customer: customerName,
+                phone: customerPhone,
+                deliveryAddress: deliveryAddress,
+                items: [...selectedOrderItems],
+                total: parseFloat(total.toFixed(2)),
+                payment: paymentMethod,
+                status: 'pending',
+                timestamp: new Date().toISOString(),
+                notes: notes
+            };
+            
+            // Add to orders array
+            orders.unshift(newOrder);
+            
+            // Save data
+            saveData();
+            
+            // Clear form
+            clearOrderForm();
+            
+            // Show success message
+            alert(`Order ${orderId} created successfully!`);
+            
+            // Switch to orders tab and refresh
+            document.querySelector('[data-tab="orders"]').click();
+            displayOrders();
+            updateDashboard();
+            updateKitchenView();
+        }
+        
+        function clearOrderForm() {
+            document.getElementById('customer-name').value = '';
+            document.getElementById('customer-phone').value = '';
+            document.getElementById('delivery-address').value = '';
+            document.getElementById('order-notes').value = '';
+            selectedOrderItems = [];
+            updateSelectedItemsDisplay();
+        }
+        
+        function generateOrderId() {
+            const prefix = settings.orderPrefix || 'SMFB';
+            const today = new Date();
+            const dateStr = today.getFullYear().toString().substr(-2) + 
+                           (today.getMonth() + 1).toString().padStart(2, '0') + 
+                           today.getDate().toString().padStart(2, '0');
+            
+            // Find highest order number for today
+            const todayOrders = orders.filter(order => order.id.startsWith(prefix + '-' + dateStr));
+            let maxNum = 0;
+            
+            todayOrders.forEach(order => {
+                const parts = order.id.split('-');
+                if (parts.length > 2) {
+                    const num = parseInt(parts[2]);
+                    if (num > maxNum) maxNum = num;
+                }
+            });
+            
+            const nextNum = (maxNum + 1).toString().padStart(3, '0');
+            return `${prefix}-${dateStr}-${nextNum}`;
+        }
+        
+        function applyOrderFilters() {
+            displayOrders();
+        }
+        
+        function clearOrderFilters() {
+            document.getElementById('filter-date-from').value = '';
+            document.getElementById('filter-date-to').value = '';
+            document.getElementById('filter-type').value = 'all';
+            document.getElementById('filter-status').value = 'all';
+            displayOrders();
+        }
+        
+        function exportOrdersToCSV() {
+            // Create CSV content
+            let csv = 'Order ID,Customer,Phone,Type,Items,Total,Payment,Status,Date,Time,Notes\n';
+            
+            orders.forEach(order => {
+                const orderDate = new Date(order.timestamp);
+                const dateStr = orderDate.toISOString().split('T')[0];
+                const timeStr = orderDate.toTimeString().split(' ')[0];
+                
+                // Format items as string
+                const itemsStr = order.items.map(item => `${item.quantity}x ${item.name}`).join('; ');
+                
+                // Escape commas and quotes in notes
+                const notesEscaped = order.notes ? `"${order.notes.replace(/"/g, '""')}"` : '';
+                
+                csv += `"${order.id}","${order.customer}","${order.phone}","${order.type}","${itemsStr}",${order.total},"${order.payment}","${order.status}","${dateStr}","${timeStr}",${notesEscaped}\n`;
+            });
+            
+            // Create download link
+            downloadCSV(csv, `orders_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function showImportModal() {
+            showModal('import-modal');
+        }
+        
+        function importCSV() {
+            const fileInput = document.getElementById('csv-file');
+            const importType = document.getElementById('import-type').value;
+            const importMode = document.getElementById('import-mode').value;
+            
+            if (!fileInput.files.length) {
+                alert('Please select a CSV file to import');
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = function(e) {
+                try {
+                    const csvContent = e.target.result;
+                    const rows = csvContent.split('\n').filter(row => row.trim() !== '');
+                    
+                    if (rows.length <= 1) {
+                        alert('CSV file is empty or has no data rows');
+                        return;
+                    }
+                    
+                    // Parse CSV
+                    const headers = rows[0].split(',').map(h => h.trim().replace(/"/g, ''));
+                    const dataRows = rows.slice(1);
+                    
+                    let importedCount = 0;
+                    
+                    if (importType === 'orders') {
+                        if (importMode === 'replace') {
+                            orders = [];
+                        }
+                        
+                        dataRows.forEach(row => {
+                            const columns = parseCSVRow(row);
+                            
+                            if (columns.length >= headers.length) {
+                                // Parse items from CSV
+                                const items = parseItemsFromCSV(columns[4]);
+                                
+                                // Create order object from CSV row
+                                const order = {
+                                    id: columns[0] || generateOrderId(),
+                                    customer: columns[1] || 'Unknown',
+                                    phone: columns[2] || '',
+                                    type: columns[3] || 'walk-in',
+                                    items: items,
+                                    total: parseFloat(columns[5]) || 0,
+                                    payment: columns[6] || 'cash',
+                                    status: columns[7] || 'pending',
+                                    timestamp: new Date(`${columns[8]}T${columns[9]}`).toISOString() || new Date().toISOString(),
+                                    notes: columns[10] || ''
+                                };
+                                
+                                if (importMode === 'update') {
+                                    // Find and update existing order
+                                    const existingIndex = orders.findIndex(o => o.id === order.id);
+                                    if (existingIndex !== -1) {
+                                        orders[existingIndex] = order;
+                                    } else {
+                                        orders.push(order);
+                                    }
+                                } else {
+                                    orders.push(order);
+                                }
+                                
+                                importedCount++;
+                            }
+                        });
+                    } else if (importType === 'staff') {
+                        if (importMode === 'replace') {
+                            staff = [];
+                        }
+                        
+                        dataRows.forEach(row => {
+                            const columns = parseCSVRow(row);
+                            
+                            if (columns.length >= 6) {
+                                const staffMember = {
+                                    id: parseInt(columns[0]) || staff.length + 1,
+                                    name: columns[1] || '',
+                                    role: columns[2] || 'Server',
+                                    phone: columns[3] || '',
+                                    email: columns[4] || '',
+                                    rate: parseFloat(columns[5]) || 10.50,
+                                    status: 'active'
+                                };
+                                
+                                staff.push(staffMember);
+                                importedCount++;
+                            }
+                        });
+                    }
+                    
+                    saveData();
+                    hideModal('import-modal');
+                    alert(`Successfully imported ${importedCount} ${importType} from CSV file`);
+                    
+                    // Refresh relevant views
+                    if (importType === 'orders') {
+                        displayOrders();
+                        updateDashboard();
+                    } else if (importType === 'staff') {
+                        displayStaff();
+                    }
+                    
+                } catch (error) {
+                    alert(`Error importing CSV: ${error.message}`);
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+        
+        function parseCSVRow(row) {
+            // Simple CSV parser that handles quoted fields
+            const result = [];
+            let inQuotes = false;
+            let currentField = '';
+            
+            for (let i = 0; i < row.length; i++) {
+                const char = row[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(currentField);
+                    currentField = '';
+                } else {
+                    currentField += char;
+                }
+            }
+            
+            result.push(currentField);
+            return result.map(field => field.replace(/^"|"$/g, '').trim());
+        }
+        
+        function parseItemsFromCSV(itemsStr) {
+            // Parse items from format like "2x Cod; 1x Chips"
+            const items = [];
+            const itemParts = itemsStr.split(';');
+            
+            itemParts.forEach(part => {
+                const match = part.trim().match(/^(\d+)x\s+(.+)$/);
+                if (match) {
+                    const quantity = parseInt(match[1]);
+                    const name = match[2].trim();
+                    
+                    // Find price from menu items
+                    const menuItem = menuItems.find(item => item.name === name);
+                    const price = menuItem ? menuItem.price : 0;
+                    
+                    items.push({ name, price, quantity });
+                }
+            });
+            
+            return items;
+        }
+        
+        function displayStaff() {
+            const tableBody = document.getElementById('staff-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            // Populate staff dropdown in attendance
+            const attendanceStaffSelect = document.getElementById('attendance-staff');
+            attendanceStaffSelect.innerHTML = '<option value="all">All Staff</option>';
+            
+            staff.forEach(member => {
+                // Add to table
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${member.id}</td>
+                    <td>${member.name}</td>
+                    <td>${member.role}</td>
+                    <td>${member.phone}</td>
+                    <td>£${member.rate.toFixed(2)}/hr</td>
+                    <td>${calculateHoursThisWeek(member.id)}</td>
+                    <td><span class="status-badge ${member.status === 'active' ? 'status-completed' : 'status-pending'}">${member.status}</span></td>
+                    <td>
+                        <button class="btn btn-small" onclick="editStaff(${member.id})">Edit</button>
+                        <button class="btn btn-small btn-warning" onclick="toggleStaffStatus(${member.id})">${member.status === 'active' ? 'Deactivate' : 'Activate'}</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+                
+                // Add to attendance dropdown
+                const option = document.createElement('option');
+                option.value = member.id;
+                option.textContent = member.name;
+                attendanceStaffSelect.appendChild(option);
+            });
+        }
+        
+        function calculateHoursThisWeek(staffId) {
+            const now = new Date();
+            const startOfWeek = new Date(now);
+            startOfWeek.setDate(now.getDate() - now.getDay()); // Sunday
+            startOfWeek.setHours(0, 0, 0, 0);
+            
+            const endOfWeek = new Date(startOfWeek);
+            endOfWeek.setDate(startOfWeek.getDate() + 6);
+            endOfWeek.setHours(23, 59, 59, 999);
+            
+            const weekAttendance = attendance.filter(record => {
+                return record.staffId === staffId && 
+                       new Date(record.date) >= startOfWeek && 
+                       new Date(record.date) <= endOfWeek &&
+                       record.status === 'present';
+            });
+            
+            const totalHours = weekAttendance.reduce((sum, record) => sum + record.hours, 0);
+            return totalHours.toFixed(1);
+        }
+        
+        function showStaffModal() {
+            document.getElementById('modal-title').textContent = 'Add New Staff';
+            document.getElementById('staff-name').value = '';
+            document.getElementById('staff-role').value = 'Server';
+            document.getElementById('staff-phone').value = '';
+            document.getElementById('staff-email').value = '';
+            document.getElementById('staff-rate').value = '10.50';
+            document.getElementById('staff-start-date').value = new Date().toISOString().split('T')[0];
+            
+            // Reset button to save mode
+            const saveBtn = document.getElementById('save-staff');
+            delete saveBtn.dataset.editId;
+            saveBtn.textContent = 'Save Staff';
+            
+            showModal('staff-modal');
+        }
+        
+        function saveStaffMember() {
+            const name = document.getElementById('staff-name').value;
+            const role = document.getElementById('staff-role').value;
+            const phone = document.getElementById('staff-phone').value;
+            const email = document.getElementById('staff-email').value;
+            const rate = parseFloat(document.getElementById('staff-rate').value);
+            const startDate = document.getElementById('staff-start-date').value;
+            
+            if (!name || !phone) {
+                alert('Please enter at least name and phone number');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('save-staff');
+            const isEdit = saveBtn.dataset.editId;
+            
+            if (isEdit) {
+                // Update existing staff
+                const staffId = parseInt(isEdit);
+                const member = staff.find(s => s.id === staffId);
+                
+                if (member) {
+                    member.name = name;
+                    member.role = role;
+                    member.phone = phone;
+                    member.email = email;
+                    member.rate = rate;
+                    
+                    saveData();
+                    hideModal('staff-modal');
+                    displayStaff();
+                    
+                    alert(`Staff member updated successfully`);
+                }
+            } else {
+                // Add new staff
+                const newId = staff.length > 0 ? Math.max(...staff.map(s => s.id)) + 1 : 1;
+                
+                const newStaff = {
+                    id: newId,
+                    name: name,
+                    role: role,
+                    phone: phone,
+                    email: email,
+                    rate: rate,
+                    startDate: startDate,
+                    status: 'active'
+                };
+                
+                staff.push(newStaff);
+                saveData();
+                hideModal('staff-modal');
+                displayStaff();
+                
+                alert(`Staff member ${name} added successfully`);
+            }
+        }
+        
+        function editStaff(staffId) {
+            const member = staff.find(s => s.id === staffId);
+            if (!member) return;
+            
+            document.getElementById('modal-title').textContent = 'Edit Staff';
+            document.getElementById('staff-name').value = member.name;
+            document.getElementById('staff-role').value = member.role;
+            document.getElementById('staff-phone').value = member.phone;
+            document.getElementById('staff-email').value = member.email;
+            document.getElementById('staff-rate').value = member.rate;
+            document.getElementById('staff-start-date').value = member.startDate || new Date().toISOString().split('T')[0];
+            
+            // Set button to update mode
+            const saveBtn = document.getElementById('save-staff');
+            saveBtn.dataset.editId = staffId;
+            saveBtn.textContent = 'Update Staff';
+            
+            showModal('staff-modal');
+        }
+        
+        function toggleStaffStatus(staffId) {
+            const member = staff.find(s => s.id === staffId);
+            if (member) {
+                member.status = member.status === 'active' ? 'inactive' : 'active';
+                saveData();
+                displayStaff();
+                
+                alert(`Staff member ${member.name} ${member.status === 'active' ? 'activated' : 'deactivated'}`);
+            }
+        }
+        
+        function markAttendance() {
+            const selectedDate = document.getElementById('attendance-date').value;
+            const selectedStaff = document.getElementById('attendance-staff').value;
+            
+            if (!selectedDate) {
+                alert('Please select a date');
+                return;
+            }
+            
+            if (selectedStaff === 'all') {
+                // Mark attendance for all active staff
+                const activeStaff = staff.filter(member => member.status === 'active');
+                
+                activeStaff.forEach(member => {
+                    // Check if attendance already exists for this staff on this date
+                    const existing = attendance.find(record => 
+                        record.staffId === member.id && record.date === selectedDate
+                    );
+                    
+                    if (!existing) {
+                        // Create new attendance record
+                        const newRecord = {
+                            id: attendance.length > 0 ? Math.max(...attendance.map(a => a.id)) + 1 : 1,
+                            staffId: member.id,
+                            date: selectedDate,
+                            start: '09:00',
+                            end: '17:00',
+                            hours: 8,
+                            status: 'present'
+                        };
+                        
+                        attendance.push(newRecord);
+                    }
+                });
+                
+                saveData();
+                displayAttendance();
+                alert(`Attendance marked for all active staff on ${selectedDate}`);
+            } else {
+                // Mark attendance for specific staff
+                const staffId = parseInt(selectedStaff);
+                const member = staff.find(s => s.id === staffId);
+                
+                if (!member) {
+                    alert('Selected staff member not found');
+                    return;
+                }
+                
+                // Check if attendance already exists
+                const existing = attendance.find(record => 
+                    record.staffId === staffId && record.date === selectedDate
+                );
+                
+                if (existing) {
+                    alert(`Attendance for ${member.name} on ${selectedDate} already exists`);
+                    return;
+                }
+                
+                // Create new attendance record
+                const newRecord = {
+                    id: attendance.length > 0 ? Math.max(...attendance.map(a => a.id)) + 1 : 1,
+                    staffId: staffId,
+                    date: selectedDate,
+                    start: '09:00',
+                    end: '17:00',
+                    hours: 8,
+                    status: 'present'
+                };
+                
+                attendance.push(newRecord);
+                saveData();
+                displayAttendance();
+                
+                alert(`Attendance marked for ${member.name} on ${selectedDate}`);
+            }
+        }
+        
+        function displayAttendance() {
+            const tableBody = document.getElementById('attendance-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            // Set default date to today
+            const dateInput = document.getElementById('attendance-date');
+            if (!dateInput.value) {
+                dateInput.value = new Date().toISOString().split('T')[0];
+            }
+            
+            // Filter attendance by date if specified
+            const filterDate = dateInput.value;
+            const filterStaff = document.getElementById('attendance-staff').value;
+            
+            let filteredAttendance = [...attendance];
+            
+            if (filterDate) {
+                filteredAttendance = filteredAttendance.filter(record => record.date === filterDate);
+            }
+            
+            if (filterStaff !== 'all') {
+                filteredAttendance = filteredAttendance.filter(record => record.staffId === parseInt(filterStaff));
+            }
+            
+            // Sort by staff name
+            filteredAttendance.sort((a, b) => {
+                const staffA = staff.find(s => s.id === a.staffId);
+                const staffB = staff.find(s => s.id === b.staffId);
+                return (staffA?.name || '').localeCompare(staffB?.name || '');
+            });
+            
+            // Display attendance records
+            filteredAttendance.forEach(record => {
+                const staffMember = staff.find(s => s.id === record.staffId);
+                if (!staffMember) return;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${staffMember.name}</td>
+                    <td>${record.date}</td>
+                    <td>${record.start}</td>
+                    <td>${record.end}</td>
+                    <td>${record.hours}</td>
+                    <td><span class="status-badge ${record.status === 'present' ? 'status-completed' : 'status-pending'}">${record.status}</span></td>
+                    <td>
+                        <button class="btn btn-small" onclick="editAttendance(${record.id})">Edit</button>
+                        <button class="btn btn-small btn-warning" onclick="deleteAttendance(${record.id})">Delete</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            if (filteredAttendance.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="7" style="text-align: center; padding: 30px;">No attendance records found for selected filters</td>`;
+                tableBody.appendChild(row);
+            }
+        }
+        
+        function editAttendance(attendanceId) {
+            const record = attendance.find(a => a.id === attendanceId);
+            if (!record) return;
+            
+            const staffMember = staff.find(s => s.id === record.staffId);
+            const newStart = prompt(`Enter start time for ${staffMember?.name || 'Staff'} on ${record.date}:`, record.start);
+            const newEnd = prompt(`Enter end time:`, record.end);
+            
+            if (newStart && newEnd) {
+                // Calculate hours
+                const startHours = parseInt(newStart.split(':')[0]);
+                const startMinutes = parseInt(newStart.split(':')[1]);
+                const endHours = parseInt(newEnd.split(':')[0]);
+                const endMinutes = parseInt(newEnd.split(':')[1]);
+                
+                const hours = (endHours + endMinutes/60) - (startHours + startMinutes/60);
+                
+                record.start = newStart;
+                record.end = newEnd;
+                record.hours = hours;
+                
+                saveData();
+                displayAttendance();
+                
+                alert('Attendance record updated');
+            }
+        }
+        
+        function deleteAttendance(attendanceId) {
+            if (confirm('Are you sure you want to delete this attendance record?')) {
+                const index = attendance.findIndex(a => a.id === attendanceId);
+                if (index !== -1) {
+                    attendance.splice(index, 1);
+                    saveData();
+                    displayAttendance();
+                    alert('Attendance record deleted');
+                }
+            }
+        }
+        
+        function calculatePayroll() {
+            const period = document.getElementById('pay-period').value;
+            let startDate, endDate;
+            
+            const now = new Date();
+            
+            switch (period) {
+                case 'this-week':
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - now.getDay()); // Sunday
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    break;
+                    
+                case 'last-week':
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - now.getDay() - 7);
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    break;
+                    
+                case 'this-month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                    break;
+                    
+                case 'last-month':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                    break;
+                    
+                case 'custom':
+                    startDate = new Date(document.getElementById('pay-period-from').value);
+                    endDate = new Date(document.getElementById('pay-period-to').value);
+                    break;
+                    
+                default:
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - now.getDay());
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+            }
+            
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                alert('Please select valid dates for the pay period');
+                return;
+            }
+            
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            
+            // Calculate payroll for each staff
+            const payrollData = [];
+            let totalGross = 0;
+            let totalTax = 0;
+            let totalNI = 0;
+            let totalNet = 0;
+            
+            staff.forEach(member => {
+                if (member.status !== 'active') return;
+                
+                // Get attendance records for this period
+                const periodAttendance = attendance.filter(record => {
+                    const recordDate = new Date(record.date);
+                    return record.staffId === member.id && 
+                           recordDate >= startDate && 
+                           recordDate <= endDate &&
+                           record.status === 'present';
+                });
+                
+                // Calculate hours worked
+                const hoursWorked = periodAttendance.reduce((sum, record) => sum + record.hours, 0);
+                
+                if (hoursWorked > 0) {
+                    // Calculate gross pay
+                    const grossPay = hoursWorked * member.rate;
+                    
+                    // Calculate tax (simplified - 20% over £12,570 annual threshold)
+                    const annualRate = member.rate * 40 * 52; // Assuming 40 hrs/week, 52 weeks/year
+                    const taxFreeAllowance = 12570;
+                    const taxableAnnual = Math.max(0, annualRate - taxFreeAllowance);
+                    const taxRate = taxableAnnual > 0 ? 0.2 : 0;
+                    
+                    // Calculate tax for this period (pro-rata)
+                    const daysInPeriod = (endDate - startDate) / (1000 * 60 * 60 * 24) + 1;
+                    const tax = grossPay * taxRate * (daysInPeriod / 365) * 52;
+                    
+                    // Calculate NI (simplified - 12% over £242/week)
+                    const weeklyRate = member.rate * 40;
+                    const niThreshold = 242;
+                    const niRate = weeklyRate > niThreshold ? 0.12 : 0;
+                    const ni = grossPay * niRate * (daysInPeriod / 365) * 52;
+                    
+                    // Calculate net pay
+                    const netPay = grossPay - tax - ni;
+                    
+                    payrollData.push({
+                        staffName: member.name,
+                        hoursWorked: hoursWorked.toFixed(1),
+                        hourlyRate: member.rate,
+                        grossPay: grossPay,
+                        tax: tax,
+                        ni: ni,
+                        netPay: netPay,
+                        status: 'pending'
+                    });
+                    
+                    totalGross += grossPay;
+                    totalTax += tax;
+                    totalNI += ni;
+                    totalNet += netPay;
+                }
+            });
+            
+            // Display payroll data
+            displayPayrollTable(payrollData);
+            
+            // Update summary
+            document.getElementById('total-gross').textContent = `£${totalGross.toFixed(2)}`;
+            document.getElementById('total-tax').textContent = `£${totalTax.toFixed(2)}`;
+            document.getElementById('total-ni').textContent = `£${totalNI.toFixed(2)}`;
+            document.getElementById('total-net').textContent = `£${totalNet.toFixed(2)}`;
+        }
+        
+        function displayPayrollTable(payrollData) {
+            const tableBody = document.getElementById('payroll-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            payrollData.forEach(data => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${data.staffName}</td>
+                    <td>${data.hoursWorked}</td>
+                    <td>£${data.hourlyRate.toFixed(2)}</td>
+                    <td>£${data.grossPay.toFixed(2)}</td>
+                    <td>£${data.tax.toFixed(2)}</td>
+                    <td>£${data.ni.toFixed(2)}</td>
+                    <td>£${data.netPay.toFixed(2)}</td>
+                    <td><span class="status-badge status-pending">${data.status}</span></td>
+                `;
+                tableBody.appendChild(row);
+            });
+            
+            if (payrollData.length === 0) {
+                const row = document.createElement('tr');
+                row.innerHTML = `<td colspan="8" style="text-align: center; padding: 30px;">No payroll data for selected period</td>`;
+                tableBody.appendChild(row);
+            }
+        }
+        
+        function exportPayrollToCSV() {
+            // Create CSV content
+            let csv = 'Staff Name,Hours Worked,Hourly Rate,Gross Pay,Tax,NI,Net Pay,Status\n';
+            
+            const tableBody = document.getElementById('payroll-table').querySelector('tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 8) {
+                    const staffName = cells[0].textContent;
+                    const hoursWorked = cells[1].textContent;
+                    const hourlyRate = cells[2].textContent.replace('£', '');
+                    const grossPay = cells[3].textContent.replace('£', '');
+                    const tax = cells[4].textContent.replace('£', '');
+                    const ni = cells[5].textContent.replace('£', '');
+                    const netPay = cells[6].textContent.replace('£', '');
+                    const status = cells[7].querySelector('.status-badge').textContent;
+                    
+                    csv += `"${staffName}",${hoursWorked},${hourlyRate},${grossPay},${tax},${ni},${netPay},"${status}"\n`;
+                }
+            });
+            
+            // Create download link
+            downloadCSV(csv, `payroll_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function generateReport() {
+            const reportType = document.getElementById('report-type').value;
+            const period = document.getElementById('report-period').value;
+            
+            let startDate, endDate;
+            const now = new Date();
+            
+            switch (period) {
+                case 'today':
+                    startDate = new Date(now);
+                    endDate = new Date(now);
+                    break;
+                    
+                case 'yesterday':
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - 1);
+                    endDate = new Date(startDate);
+                    break;
+                    
+                case 'this-week':
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - now.getDay());
+                    endDate = new Date(now);
+                    break;
+                    
+                case 'last-week':
+                    startDate = new Date(now);
+                    startDate.setDate(now.getDate() - now.getDay() - 7);
+                    endDate = new Date(startDate);
+                    endDate.setDate(startDate.getDate() + 6);
+                    break;
+                    
+                case 'this-month':
+                    startDate = new Date(now.getFullYear(), now.getMonth(), 1);
+                    endDate = new Date(now);
+                    break;
+                    
+                case 'last-month':
+                    startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+                    endDate = new Date(now.getFullYear(), now.getMonth(), 0);
+                    break;
+                    
+                case 'custom':
+                    startDate = new Date(document.getElementById('report-from').value);
+                    endDate = new Date(document.getElementById('report-to').value);
+                    break;
+                    
+                default:
+                    startDate = new Date(now);
+                    endDate = new Date(now);
+            }
+            
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                alert('Please select valid dates for the report period');
+                return;
+            }
+            
+            startDate.setHours(0, 0, 0, 0);
+            endDate.setHours(23, 59, 59, 999);
+            
+            // Filter orders by date range
+            const filteredOrders = orders.filter(order => {
+                const orderDate = new Date(order.timestamp);
+                return orderDate >= startDate && orderDate <= endDate;
+            });
+            
+            if (reportType === 'sales') {
+                generateSalesReport(filteredOrders, startDate, endDate);
+            } else if (reportType === 'financial') {
+                generateFinancialReport(filteredOrders, startDate, endDate);
+            }
+        }
+        
+        function generateSalesReport(orders, startDate, endDate) {
+            // Update chart title
+            document.getElementById('report-chart-title').textContent = 'Sales by Order Type';
+            
+            // Calculate sales by order type
+            const salesByType = {};
+            orders.forEach(order => {
+                const type = order.type;
+                salesByType[type] = (salesByType[type] || 0) + order.total;
+            });
+            
+            // Prepare data for chart
+            const labels = Object.keys(salesByType).map(formatOrderType);
+            const data = Object.values(salesByType);
+            
+            // Create chart
+            const ctx = document.getElementById('reportChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.reportChartInstance) {
+                window.reportChartInstance.destroy();
+            }
+            
+            window.reportChartInstance = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Sales (£)',
+                        data: data,
+                        backgroundColor: '#d32f2f',
+                        borderColor: '#b71c1c',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '£' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update summary
+            const totalSales = orders.reduce((sum, order) => sum + order.total, 0);
+            const avgOrderValue = orders.length > 0 ? totalSales / orders.length : 0;
+            const orderCount = orders.length;
+            
+            document.getElementById('report-summary').innerHTML = `
+                <h4 style="color: var(--white); margin-bottom: 15px;">Sales Summary</h4>
+                <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}</p>
+                <p><strong>Total Orders:</strong> ${orderCount}</p>
+                <p><strong>Total Sales:</strong> £${totalSales.toFixed(2)}</p>
+                <p><strong>Average Order Value:</strong> £${avgOrderValue.toFixed(2)}</p>
+                <p><strong>Most Popular Type:</strong> ${getMostPopularOrderType(salesByType)}</p>
+            `;
+            
+            // Update detailed data table
+            updateReportTable(orders);
+        }
+        
+        function generateFinancialReport(orders, startDate, endDate) {
+            // Update chart title
+            document.getElementById('report-chart-title').textContent = 'Daily Revenue';
+            
+            // Calculate daily revenue
+            const dailyRevenue = {};
+            orders.forEach(order => {
+                const date = order.timestamp.split('T')[0];
+                dailyRevenue[date] = (dailyRevenue[date] || 0) + order.total;
+            });
+            
+            // Sort dates
+            const sortedDates = Object.keys(dailyRevenue).sort();
+            
+            // Prepare data for chart
+            const labels = sortedDates.map(date => {
+                const d = new Date(date);
+                return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric' });
+            });
+            const data = sortedDates.map(date => dailyRevenue[date]);
+            
+            // Create chart
+            const ctx = document.getElementById('reportChart').getContext('2d');
+            
+            // Destroy existing chart if it exists
+            if (window.reportChartInstance) {
+                window.reportChartInstance.destroy();
+            }
+            
+            window.reportChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Daily Revenue (£)',
+                        data: data,
+                        backgroundColor: 'rgba(211, 47, 47, 0.2)',
+                        borderColor: '#d32f2f',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '£' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Update summary
+            const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0);
+            const orderCount = orders.length;
+            const bestDay = getBestDay(dailyRevenue);
+            
+            document.getElementById('report-summary').innerHTML = `
+                <h4 style="color: var(--white); margin-bottom: 15px;">Financial Summary</h4>
+                <p><strong>Date Range:</strong> ${startDate.toLocaleDateString()} to ${endDate.toLocaleDateString()}</p>
+                <p><strong>Total Revenue:</strong> £${totalRevenue.toFixed(2)}</p>
+                <p><strong>Number of Orders:</strong> ${orderCount}</p>
+                <p><strong>Best Day:</strong> ${bestDay.date} (£${bestDay.revenue.toFixed(2)})</p>
+                <p><strong>Average Daily Revenue:</strong> £${(totalRevenue / Object.keys(dailyRevenue).length || 0).toFixed(2)}</p>
+            `;
+            
+            // Update detailed data table
+            updateReportTable(orders);
+        }
+        
+        function updateReportTable(orders) {
+            const tableBody = document.getElementById('report-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            // Group orders by date
+            const ordersByDate = {};
+            orders.forEach(order => {
+                const date = order.timestamp.split('T')[0];
+                if (!ordersByDate[date]) {
+                    ordersByDate[date] = [];
+                }
+                ordersByDate[date].push(order);
+            });
+            
+            // Create table rows
+            Object.keys(ordersByDate).sort().reverse().forEach(date => {
+                const dateOrders = ordersByDate[date];
+                const dateTotal = dateOrders.reduce((sum, order) => sum + order.total, 0);
+                
+                // Count items sold
+                let itemsSold = 0;
+                dateOrders.forEach(order => {
+                    order.items.forEach(item => {
+                        itemsSold += item.quantity;
+                    });
+                });
+                
+                // Group by order type
+                const typeCount = {};
+                dateOrders.forEach(order => {
+                    typeCount[order.type] = (typeCount[order.type] || 0) + 1;
+                });
+                
+                // Create type summary string
+                const typeSummary = Object.entries(typeCount)
+                    .map(([type, count]) => `${count} ${formatOrderType(type)}`)
+                    .join(', ');
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${new Date(date).toLocaleDateString('en-GB')}</td>
+                    <td>${typeSummary}</td>
+                    <td>${itemsSold}</td>
+                    <td>£${dateTotal.toFixed(2)}</td>
+                    <td>£${(dateTotal * 0.6).toFixed(2)}</td> <!-- Estimated profit -->
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function exportReportToCSV() {
+            // Create CSV from report table
+            let csv = 'Date,Order Types,Items Sold,Revenue,Estimated Profit\n';
+            
+            const tableBody = document.getElementById('report-table').querySelector('tbody');
+            const rows = tableBody.querySelectorAll('tr');
+            
+            rows.forEach(row => {
+                const cells = row.querySelectorAll('td');
+                if (cells.length >= 5) {
+                    const date = cells[0].textContent;
+                    const orderTypes = `"${cells[1].textContent}"`;
+                    const itemsSold = cells[2].textContent;
+                    const revenue = cells[3].textContent.replace('£', '');
+                    const profit = cells[4].textContent.replace('£', '');
+                    
+                    csv += `${date},${orderTypes},${itemsSold},${revenue},${profit}\n`;
+                }
+            });
+            
+            // Create download link
+            downloadCSV(csv, `report_export_${new Date().toISOString().split('T')[0]}.csv`);
+        }
+        
+        function loadSettingsToUI() {
+            // Business settings
+            document.getElementById('business-name').value = settings.businessName || '';
+            document.getElementById('business-address').value = settings.businessAddress || '';
+            document.getElementById('business-phone').value = settings.businessPhone || '';
+            document.getElementById('business-email').value = settings.businessEmail || '';
+            document.getElementById('tax-rate').value = settings.taxRate || 20;
+            document.getElementById('service-charge').value = settings.serviceCharge || 0;
+            
+            // System settings
+            document.getElementById('order-prefix').value = settings.orderPrefix || 'SMFB';
+            document.getElementById('archive-days').value = settings.archiveDays || 30;
+            document.getElementById('dashboard-refresh-rate').value = settings.dashboardRefreshRate || 30;
+            document.getElementById('date-format').value = settings.dateFormat || 'dd/mm/yyyy';
+            document.getElementById('time-format').value = settings.timeFormat || '12h';
+            
+            // Kitchen settings
+            document.getElementById('alert-before-time').value = kitchenSettings.alertBeforeTime || 5;
+            document.getElementById('urgent-threshold').value = kitchenSettings.urgentThreshold || 10;
+            document.getElementById('kitchen-refresh-rate').value = kitchenSettings.kitchenRefreshRate || 30;
+            document.getElementById('enable-sound').checked = kitchenSettings.enableSound !== false;
+            
+            // Update sound toggle based on kitchen settings
+            soundEnabled = kitchenSettings.enableSound !== false;
+            document.getElementById('sound-toggle').classList.toggle('active', soundEnabled);
+            
+            // Load cooking times
+            updateCookingTimesDisplay();
+        }
+        
+        function updateCookingTimesDisplay() {
+            const container = document.getElementById('cooking-times-container');
+            container.innerHTML = '';
+            
+            // Group menu items by category
+            const itemsByCategory = {};
+            menuItems.forEach(item => {
+                if (!itemsByCategory[item.category]) {
+                    itemsByCategory[item.category] = [];
+                }
+                itemsByCategory[item.category].push(item);
+            });
+            
+            // Create cooking time inputs for each item
+            for (const category in itemsByCategory) {
+                // Add category heading
+                const heading = document.createElement('h4');
+                heading.style.color = 'var(--white)';
+                heading.style.margin = '15px 0 10px';
+                heading.textContent = category;
+                container.appendChild(heading);
+                
+                // Add items in this category
+                itemsByCategory[category].forEach(item => {
+                    const div = document.createElement('div');
+                    div.className = 'cooking-time-item';
+                    div.innerHTML = `
+                        <span class="cooking-time-name">${item.name}</span>
+                        <input type="number" class="cooking-time-input" data-item-id="${item.id}" value="${item.cookTime}" min="1" max="60">
+                        <span>minutes</span>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+        }
+        
+        function saveBusinessSettings() {
+            settings.businessName = document.getElementById('business-name').value;
+            settings.businessAddress = document.getElementById('business-address').value;
+            settings.businessPhone = document.getElementById('business-phone').value;
+            settings.businessEmail = document.getElementById('business-email').value;
+            settings.taxRate = parseFloat(document.getElementById('tax-rate').value);
+            settings.serviceCharge = parseFloat(document.getElementById('service-charge').value);
+            
+            saveData();
+            alert('Business settings saved successfully');
+        }
+        
+        function saveSystemSettings() {
+            settings.orderPrefix = document.getElementById('order-prefix').value;
+            settings.archiveDays = parseInt(document.getElementById('archive-days').value);
+            settings.dashboardRefreshRate = parseInt(document.getElementById('dashboard-refresh-rate').value);
+            settings.dateFormat = document.getElementById('date-format').value;
+            settings.timeFormat = document.getElementById('time-format').value;
+            
+            saveData();
+            
+            // Update auto-refresh interval
+            startAutoRefresh();
+            
+            alert('System settings saved successfully');
+        }
+        
+        function saveKitchenSettings() {
+            kitchenSettings.alertBeforeTime = parseInt(document.getElementById('alert-before-time').value);
+            kitchenSettings.urgentThreshold = parseInt(document.getElementById('urgent-threshold').value);
+            kitchenSettings.kitchenRefreshRate = parseInt(document.getElementById('kitchen-refresh-rate').value);
+            kitchenSettings.enableSound = document.getElementById('enable-sound').checked;
+            
+            // Save cooking times from inputs
+            document.querySelectorAll('.cooking-time-input').forEach(input => {
+                const itemId = parseInt(input.dataset.itemId);
+                const cookTime = parseInt(input.value);
+                const menuItem = menuItems.find(item => item.id === itemId);
+                if (menuItem) {
+                    menuItem.cookTime = cookTime;
+                }
+            });
+            
+            // Update sound toggle
+            soundEnabled = kitchenSettings.enableSound;
+            document.getElementById('sound-toggle').classList.toggle('active', soundEnabled);
+            
+            saveData();
+            alert('Kitchen settings saved successfully');
+        }
+        
+        function showKitchenSettingsModal() {
+            showModal('kitchen-settings-modal');
+        }
+        
+        function saveKitchenDisplaySettings() {
+            kitchenSettings.displayMode = document.getElementById('kitchen-display-mode').value;
+            kitchenSettings.autoCompleteTime = parseInt(document.getElementById('auto-complete-time').value);
+            kitchenSettings.displayColumns = {
+                orderId: document.getElementById('col-order-id').checked,
+                customer: document.getElementById('col-customer').checked,
+                items: document.getElementById('col-items').checked,
+                timer: document.getElementById('col-timer').checked,
+                notes: document.getElementById('col-notes').checked
+            };
+            
+            saveData();
+            hideModal('kitchen-settings-modal');
+            updateKitchenView();
+            alert('Kitchen display settings saved successfully');
+        }
+        
+        function displayMenuItems() {
+            const tableBody = document.getElementById('menu-items-table').querySelector('tbody');
+            tableBody.innerHTML = '';
+            
+            menuItems.forEach(item => {
+                const profitMargin = ((item.price - item.cost) / item.cost * 100).toFixed(1);
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${item.name}</td>
+                    <td>${item.category}</td>
+                    <td>£${item.price.toFixed(2)}</td>
+                    <td>£${item.cost.toFixed(2)}</td>
+                    <td>${profitMargin}%</td>
+                    <td><span class="status-badge ${item.status === 'active' ? 'status-completed' : 'status-pending'}">${item.status}</span></td>
+                    <td>
+                        <button class="btn btn-small" onclick="editMenuItem(${item.id})">Edit</button>
+                        <button class="btn btn-small btn-warning" onclick="toggleMenuItemStatus(${item.id})">${item.status === 'active' ? 'Deactivate' : 'Activate'}</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+        
+        function showMenuItemModal() {
+            document.getElementById('menu-modal-title').textContent = 'Add Menu Item';
+            document.getElementById('menu-item-name').value = '';
+            document.getElementById('menu-item-category').value = 'Fish';
+            document.getElementById('menu-item-price').value = '0.00';
+            document.getElementById('menu-item-cost').value = '0.00';
+            document.getElementById('menu-item-cook-time').value = '10';
+            document.getElementById('menu-item-description').value = '';
+            document.getElementById('menu-item-status').value = 'active';
+            
+            // Reset button to save mode
+            const saveBtn = document.getElementById('save-menu-item');
+            delete saveBtn.dataset.editId;
+            saveBtn.textContent = 'Save Menu Item';
+            
+            showModal('menu-item-modal');
+        }
+        
+        function saveMenuItem() {
+            const name = document.getElementById('menu-item-name').value;
+            const category = document.getElementById('menu-item-category').value;
+            const price = parseFloat(document.getElementById('menu-item-price').value);
+            const cost = parseFloat(document.getElementById('menu-item-cost').value);
+            const cookTime = parseInt(document.getElementById('menu-item-cook-time').value);
+            const description = document.getElementById('menu-item-description').value;
+            const status = document.getElementById('menu-item-status').value;
+            
+            if (!name || price <= 0) {
+                alert('Please enter item name and valid price');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('save-menu-item');
+            const isEdit = saveBtn.dataset.editId;
+            
+            if (isEdit) {
+                // Update existing menu item
+                const itemId = parseInt(isEdit);
+                const menuItem = menuItems.find(item => item.id === itemId);
+                
+                if (menuItem) {
+                    menuItem.name = name;
+                    menuItem.category = category;
+                    menuItem.price = price;
+                    menuItem.cost = cost;
+                    menuItem.cookTime = cookTime;
+                    menuItem.description = description;
+                    menuItem.status = status;
+                    
+                    saveData();
+                    hideModal('menu-item-modal');
+                    displayMenuItems();
+                    populateMenuButtons();
+                    updateCookingTimesDisplay();
+                    
+                    alert(`Menu item updated successfully`);
+                }
+            } else {
+                // Add new menu item
+                const newId = menuItems.length > 0 ? Math.max(...menuItems.map(item => item.id)) + 1 : 1;
+                
+                const newMenuItem = {
+                    id: newId,
+                    name: name,
+                    category: category,
+                    price: price,
+                    cost: cost,
+                    cookTime: cookTime,
+                    description: description,
+                    status: status
+                };
+                
+                menuItems.push(newMenuItem);
+                saveData();
+                hideModal('menu-item-modal');
+                displayMenuItems();
+                populateMenuButtons();
+                updateCookingTimesDisplay();
+                
+                alert(`Menu item ${name} added successfully`);
+            }
+        }
+        
+        function editMenuItem(itemId) {
+            const menuItem = menuItems.find(item => item.id === itemId);
+            if (!menuItem) return;
+            
+            document.getElementById('menu-modal-title').textContent = 'Edit Menu Item';
+            document.getElementById('menu-item-name').value = menuItem.name;
+            document.getElementById('menu-item-category').value = menuItem.category;
+            document.getElementById('menu-item-price').value = menuItem.price;
+            document.getElementById('menu-item-cost').value = menuItem.cost;
+            document.getElementById('menu-item-cook-time').value = menuItem.cookTime;
+            document.getElementById('menu-item-description').value = menuItem.description || '';
+            document.getElementById('menu-item-status').value = menuItem.status;
+            
+            // Set button to update mode
+            const saveBtn = document.getElementById('save-menu-item');
+            saveBtn.dataset.editId = itemId;
+            saveBtn.textContent = 'Update Menu Item';
+            
+            showModal('menu-item-modal');
+        }
+        
+        function toggleMenuItemStatus(itemId) {
+            const menuItem = menuItems.find(item => item.id === itemId);
+            if (menuItem) {
+                menuItem.status = menuItem.status === 'active' ? 'inactive' : 'active';
+                saveData();
+                displayMenuItems();
+                populateMenuButtons();
+                
+                alert(`Menu item ${menuItem.name} ${menuItem.status === 'active' ? 'activated' : 'deactivated'}`);
+            }
+        }
+        
+        function updateKitchenView() {
+            const container = document.getElementById('kitchen-orders-container');
+            container.innerHTML = '';
+            
+            // Get orders that are preparing or ready
+            const kitchenOrders = orders.filter(order => 
+                order.status === 'preparing' || order.status === 'ready'
+            ).sort((a, b) => {
+                // Sort by status (ready first), then by start time
+                if (a.status === 'ready' && b.status !== 'ready') return -1;
+                if (a.status !== 'ready' && b.status === 'ready') return 1;
+                return new Date(a.kitchenStartTime) - new Date(b.kitchenStartTime);
+            });
+            
+            // Update kitchen stats
+            const preparingCount = orders.filter(order => order.status === 'preparing').length;
+            const readyCount = orders.filter(order => order.status === 'ready').length;
+            const urgentCount = calculateUrgentOrders(kitchenOrders);
+            const overdueCount = calculateOverdueOrders(kitchenOrders);
+            
+            document.getElementById('preparing-count').textContent = preparingCount;
+            document.getElementById('ready-count').textContent = readyCount;
+            document.getElementById('urgent-count').textContent = urgentCount;
+            document.getElementById('overdue-count').textContent = overdueCount;
+            document.getElementById('waiting-count').textContent = readyCount;
+            
+            // Calculate average preparation time
+            const completedOrders = orders.filter(order => 
+                order.status === 'completed' && order.kitchenStartTime && order.kitchenEndTime
+            );
+            const totalPrepTime = completedOrders.reduce((sum, order) => {
+                const start = new Date(order.kitchenStartTime);
+                const end = new Date(order.kitchenEndTime);
+                return sum + (end - start) / 60000; // Convert to minutes
+            }, 0);
+            const avgPrepTime = completedOrders.length > 0 ? Math.round(totalPrepTime / completedOrders.length) : 0;
+            document.getElementById('avg-prep-time').textContent = `${avgPrepTime}m`;
+            
+            // Calculate efficiency (orders completed today)
+            const today = new Date().toISOString().split('T')[0];
+            const todayCompleted = orders.filter(order => 
+                order.status === 'completed' && order.timestamp.split('T')[0] === today
+            ).length;
+            document.getElementById('today-completed').textContent = todayCompleted;
+            
+            // Calculate efficiency rate (based on target of 50 orders per day)
+            const efficiencyRate = Math.min(100, Math.round((todayCompleted / 50) * 100));
+            document.getElementById('efficiency-rate').textContent = `${efficiencyRate}%`;
+            
+            // Display kitchen orders
+            kitchenOrders.forEach(order => {
+                const orderCard = createKitchenOrderCard(order);
+                container.appendChild(orderCard);
+            });
+            
+            if (kitchenOrders.length === 0) {
+                container.innerHTML = '<div class="card" style="text-align: center; padding: 40px; grid-column: 1 / -1;"><h3>No orders in the kitchen</h3><p>All caught up!</p></div>';
+            }
+        }
+        
+        function createKitchenOrderCard(order) {
+            const card = document.createElement('div');
+            
+            const isUrgent = isOrderUrgent(order);
+            const isReady = order.status === 'ready';
+            
+            card.className = `kitchen-order-card ${isUrgent ? 'urgent' : ''} ${isReady ? 'completed' : ''}`;
+            
+            const orderDate = new Date(order.timestamp);
+            const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            
+            // Calculate total cooking time needed
+            let maxCookTime = 0;
+            order.items.forEach(item => {
+                const menuItem = menuItems.find(m => m.name === item.name);
+                if (menuItem && menuItem.cookTime > maxCookTime) {
+                    maxCookTime = menuItem.cookTime;
+                }
+            });
+            
+            // Calculate time elapsed and remaining
+            let timeElapsed = 0;
+            let timeRemaining = 0;
+            let timerDisplay = '';
+            let timerClass = '';
+            
+            if (order.kitchenStartTime && !isReady) {
+                const startTime = new Date(order.kitchenStartTime);
+                const now = new Date();
+                timeElapsed = Math.floor((now - startTime) / 60000); // Minutes
+                timeRemaining = Math.max(0, maxCookTime - timeElapsed);
+                
+                // Format timer display
+                timerDisplay = `${timeRemaining}m`;
+                
+                // Determine timer class based on urgency
+                if (timeRemaining <= kitchenSettings.alertBeforeTime) {
+                    timerClass = 'warning';
+                }
+                if (timeRemaining <= 0) {
+                    timerClass = 'danger';
+                    timerDisplay = 'OVERDUE!';
+                }
+            } else if (isReady) {
+                timerDisplay = 'READY';
+                timerClass = 'completed';
+            }
+            
+            // Create items HTML
+            let itemsHTML = '';
+            order.items.forEach(item => {
+                const menuItem = menuItems.find(m => m.name === item.name);
+                const cookTime = menuItem ? menuItem.cookTime : '?';
+                
+                itemsHTML += `
+                    <div class="order-item">
+                        <span>${item.quantity}x ${item.name}</span>
+                        <span style="color: var(--light-gray);">${cookTime} min</span>
+                    </div>
+                `;
+            });
+            
+            card.innerHTML = `
+                ${timerDisplay ? `<div class="timer-display ${timerClass}">${timerDisplay}</div>` : ''}
+                
+                <div class="order-header">
+                    <div>
+                        <div class="order-id">${order.id}</div>
+                        <div class="order-time">Ordered at ${timeString}</div>
+                    </div>
+                    <div>
+                        <span class="status-badge status-${order.status}">${order.status.toUpperCase()}</span>
+                    </div>
+                </div>
+                
+                <div class="order-items">
+                    <div style="margin-bottom: 10px;">
+                        <strong>Customer:</strong> ${order.customer}<br>
+                        <strong>Type:</strong> ${formatOrderType(order.type)}
+                    </div>
+                    ${itemsHTML}
+                </div>
+                
+                ${order.notes ? `<div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed var(--gray);"><strong>Notes:</strong> ${order.notes}</div>` : ''}
+                
+                <div class="action-buttons">
+                    ${order.status === 'preparing' ? `<button class="btn btn-small btn-success" onclick="markOrderReady('${order.id}')">Mark as Ready</button>` : ''}
+                    ${order.status === 'ready' ? `<button class="btn btn-small btn-info" onclick="completeOrder('${order.id}')">Complete Order</button>` : ''}
+                    <button class="btn btn-small btn-warning" onclick="cancelOrder('${order.id}')">Cancel</button>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        function isOrderUrgent(order) {
+            if (order.status !== 'preparing' || !order.kitchenStartTime) return false;
+            
+            const startTime = new Date(order.kitchenStartTime);
+            const now = new Date();
+            const minutesElapsed = Math.floor((now - startTime) / 60000);
+            
+            // Calculate max cook time for this order
+            let maxCookTime = 0;
+            order.items.forEach(item => {
+                const menuItem = menuItems.find(m => m.name === item.name);
+                if (menuItem && menuItem.cookTime > maxCookTime) {
+                    maxCookTime = menuItem.cookTime;
+                }
+            });
+            
+            // Check if order is approaching or past its expected completion time
+            const timeRemaining = maxCookTime - minutesElapsed;
+            return timeRemaining <= kitchenSettings.urgentThreshold;
+        }
+        
+        function calculateUrgentOrders(orders) {
+            return orders.filter(order => isOrderUrgent(order)).length;
+        }
+        
+        function calculateOverdueOrders(orders) {
+            return orders.filter(order => {
+                if (order.status !== 'preparing' || !order.kitchenStartTime) return false;
+                
+                const startTime = new Date(order.kitchenStartTime);
+                const now = new Date();
+                const minutesElapsed = Math.floor((now - startTime) / 60000);
+                
+                // Calculate max cook time for this order
+                let maxCookTime = 0;
+                order.items.forEach(item => {
+                    const menuItem = menuItems.find(m => m.name === item.name);
+                    if (menuItem && menuItem.cookTime > maxCookTime) {
+                        maxCookTime = menuItem.cookTime;
+                    }
+                });
+                
+                return minutesElapsed > maxCookTime;
+            }).length;
+        }
+        
+        function startOrderTimer(orderId) {
+            // Clear existing timer for this order
+            if (orderTimers[orderId]) {
+                clearInterval(orderTimers[orderId]);
+            }
+            
+            // Start new timer
+            orderTimers[orderId] = setInterval(() => {
+                const order = orders.find(o => o.id === orderId);
+                if (!order || order.status !== 'preparing') {
+                    stopOrderTimer(orderId);
+                    return;
+                }
+                
+                // Check if order is overdue
+                if (order.kitchenStartTime && order.expectedCompletionTime) {
+                    const now = new Date();
+                    const expectedTime = new Date(order.expectedCompletionTime);
+                    
+                    if (now > expectedTime) {
+                        // Order is overdue - play sound if enabled
+                        if (soundEnabled) {
+                            playNotificationSound();
+                        }
+                    }
+                }
+                
+                // Update kitchen view if it's visible
+                if (document.getElementById('kitchen').classList.contains('active')) {
+                    updateKitchenView();
+                }
+            }, 60000); // Check every minute
+        }
+        
+        function stopOrderTimer(orderId) {
+            if (orderTimers[orderId]) {
+                clearInterval(orderTimers[orderId]);
+                delete orderTimers[orderId];
+            }
+        }
+        
+        function startOrderTimers() {
+            // Start timers for all preparing orders
+            orders.forEach(order => {
+                if (order.status === 'preparing') {
+                    startOrderTimer(order.id);
+                }
+            });
+        }
+        
+        function stopAllTimers() {
+            // Stop all order timers
+            for (const orderId in orderTimers) {
+                clearInterval(orderTimers[orderId]);
+            }
+            orderTimers = {};
+        }
+        
+        function startAutoRefresh() {
+            // Clear existing intervals
+            clearAllIntervals();
+            
+            // Dashboard auto-refresh
+            const dashboardRate = settings.dashboardRefreshRate || 30;
+            autoRefreshIntervals.dashboard = setInterval(() => {
+                if (document.getElementById('dashboard').classList.contains('active')) {
+                    updateDashboard();
+                }
+            }, dashboardRate * 1000);
+            
+            // Kitchen auto-refresh
+            const kitchenRate = kitchenSettings.kitchenRefreshRate || 30;
+            autoRefreshIntervals.kitchen = setInterval(() => {
+                if (document.getElementById('kitchen').classList.contains('active')) {
+                    updateKitchenView();
+                }
+            }, kitchenRate * 1000);
+            
+            // Update current date every minute
+            autoRefreshIntervals.date = setInterval(updateCurrentDate, 60000);
+        }
+        
+        function clearAllIntervals() {
+            for (const key in autoRefreshIntervals) {
+                clearInterval(autoRefreshIntervals[key]);
+            }
+            autoRefreshIntervals = {};
+        }
+        
+        function playNotificationSound() {
+            const audio = document.getElementById('notification-sound');
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+        
+        function backupData() {
+            const backup = {
+                orders: orders,
+                staff: staff,
+                attendance: attendance,
+                menuItems: menuItems,
+                settings: settings,
+                kitchenSettings: kitchenSettings,
+                backupDate: new Date().toISOString(),
+                version: '1.0'
+            };
+            
+            const dataStr = JSON.stringify(backup, null, 2);
+            downloadJSON(dataStr, `fishbar_backup_${new Date().toISOString().split('T')[0]}.json`);
+            
+            alert('Data backup created successfully');
+        }
+        
+        function restoreData() {
+            if (confirm('WARNING: This will replace all current data. Are you sure you want to restore from backup?')) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const backup = JSON.parse(e.target.result);
+                            
+                            // Validate backup structure
+                            if (backup.orders && backup.settings) {
+                                orders = backup.orders;
+                                staff = backup.staff || [];
+                                attendance = backup.attendance || [];
+                                menuItems = backup.menuItems || getDefaultMenuItems();
+                                settings = backup.settings;
+                                kitchenSettings = backup.kitchenSettings || getDefaultKitchenSettings();
+                                
+                                saveData();
+                                location.reload();
+                            } else {
+                                alert('Invalid backup file format');
+                            }
+                        } catch (error) {
+                            alert('Error reading backup file: ' + error.message);
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            }
+        }
+        
+        function clearAllData() {
+            if (confirm('WARNING: This will delete ALL data including orders, staff, and settings. This action cannot be undone. Are you absolutely sure?')) {
+                if (confirm('Are you REALLY sure? This will delete everything!')) {
+                    localStorage.clear();
+                    alert('All data has been cleared. The page will now reload.');
+                    location.reload();
+                }
+            }
+        }
+        
+        function initializeCharts() {
+            // Revenue chart for dashboard
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            
+            // Get data for last 7 days
+            const days = [];
+            const revenueData = [];
+            
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(date.getDate() - i);
+                const dateStr = date.toISOString().split('T')[0];
+                
+                // Get day name
+                const dayName = date.toLocaleDateString('en-GB', { weekday: 'short' });
+                days.push(dayName);
+                
+                // Calculate revenue for this day
+                const dayOrders = orders.filter(order => order.timestamp.split('T')[0] === dateStr);
+                const dayRevenue = dayOrders.reduce((sum, order) => sum + order.total, 0);
+                revenueData.push(dayRevenue);
+            }
+            
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: days,
+                    datasets: [{
+                        label: 'Daily Revenue (£)',
+                        data: revenueData,
+                        backgroundColor: 'rgba(211, 47, 47, 0.2)',
+                        borderColor: '#d32f2f',
+                        borderWidth: 2,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return '£' + value;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Sales chart for dashboard
+            const salesCtx = document.getElementById('salesChart').getContext('2d');
+            
+            // Calculate top selling items
+            const itemSales = {};
+            orders.forEach(order => {
+                order.items.forEach(item => {
+                    itemSales[item.name] = (itemSales[item.name] || 0) + item.quantity;
+                });
+            });
+            
+            // Get top 5 items
+            const topItems = Object.entries(itemSales)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+            
+            const itemLabels = topItems.map(item => item[0]);
+            const itemData = topItems.map(item => item[1]);
+            
+            new Chart(salesCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: itemLabels,
+                    datasets: [{
+                        label: 'Items Sold',
+                        data: itemData,
+                        backgroundColor: [
+                            '#d32f2f',
+                            '#ff6659',
+                            '#b71c1c',
+                            '#ff9a3c',
+                            '#ffcc80'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Utility functions
+        function formatOrderType(type) {
+            const types = {
+                'walk-in': 'Walk-in',
+                'just-eat': 'Just Eat',
+                'deliveroo': 'Deliveroo',
+                'uber-eats': 'Uber Eats',
+                'phone': 'Phone Order'
+            };
+            return types[type] || type;
+        }
+        
+        function formatPaymentMethod(method) {
+            const methods = {
+                'cash': 'Cash',
+                'card': 'Card',
+                'just-eat': 'Just Eat',
+                'deliveroo': 'Deliveroo',
+                'uber-eats': 'Uber Eats'
+            };
+            return methods[method] || method;
+        }
+        
+        function getMostPopularOrderType(salesByType) {
+            let maxType = '';
+            let maxValue = 0;
+            
+            for (const [type, value] of Object.entries(salesByType)) {
+                if (value > maxValue) {
+                    maxValue = value;
+                    maxType = formatOrderType(type);
+                }
+            }
+            
+            return maxType || 'None';
+        }
+        
+        function getBestDay(dailyRevenue) {
+            let bestDate = '';
+            let bestRevenue = 0;
+            
+            for (const [date, revenue] of Object.entries(dailyRevenue)) {
+                if (revenue > bestRevenue) {
+                    bestRevenue = revenue;
+                    bestDate = new Date(date).toLocaleDateString('en-GB');
+                }
+            }
+            
+            return { date: bestDate || 'None', revenue: bestRevenue };
+        }
+        
+        function downloadCSV(csv, filename) {
+            const blob = new Blob([csv], { type: 'text/csv' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+        
+        function downloadJSON(data, filename) {
+            const blob = new Blob([data], { type: 'application/json' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }
+    </script>
+</body>
+</html>
