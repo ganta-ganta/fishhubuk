@@ -1752,11 +1752,25 @@ async function loadInitialData() {
             .get();
         staff = staffSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         
+        // Load orders
+        const ordersSnapshot = await firebaseFirestore.collection('orders')
+            .where('userId', '==', currentUser.uid)
+            .orderBy('timestamp', 'desc')
+            .limit(100)
+            .get();
+        orders = ordersSnapshot.docs.map(doc => ({ 
+            id: doc.id,  // Firestore document ID
+            ...doc.data(),
+            firestoreId: doc.id  // Store Firestore ID separately
+        }));
+        
         // Update UI
         loadSettingsToUI();
         populateMenuButtons();
         displayStaff();
         displayMenuItems();
+        updateDashboard();
+        displayOrders();
         initializeCharts();
         startAutoRefresh();
         
@@ -1775,35 +1789,26 @@ async function loadInitialData() {
 function setupRealtimeListeners() {
     if (!currentUser || currentUser.uid === 'local-user-offline') return;
     
-    // Orders listener
+    // Orders listener - REAL TIME UPDATES
     realtimeListeners.orders = firebaseFirestore.collection('orders')
         .where('userId', '==', currentUser.uid)
         .orderBy('timestamp', 'desc')
-        .limit(50)
+        .limit(100)
         .onSnapshot((snapshot) => {
-            orders = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            orders = snapshot.docs.map(doc => ({ 
+                id: doc.id,  // Firestore document ID
+                ...doc.data(),
+                firestoreId: doc.id
+            }));
             
-            // Update UI based on active tab
-            const activeTab = document.querySelector('.tab.active');
-            if (activeTab) {
-                const tabId = activeTab.dataset.tab;
-                switch(tabId) {
-                    case 'dashboard':
-                        updateDashboard();
-                        break;
-                    case 'orders':
-                        displayOrders();
-                        break;
-                    case 'kitchen':
-                        updateKitchenView();
-                        break;
-                }
-            }
+            console.log('Orders updated from Firestore in real-time');
             
-            // Update all order displays
-            updateAllOrderDisplays();
+            // Update all UI components
+            updateDashboard();
+            displayOrders();
+            updateKitchenView();
+            updateRecentOrdersTable();
             
-            console.log('Orders updated from Firestore');
         }, (error) => {
             console.error('Orders listener error:', error);
             if (error.code !== 'permission-denied') {
@@ -1824,6 +1829,7 @@ function setupRealtimeListeners() {
         });
 }
 
+// ==================== ORDER MANAGEMENT - FIXED VERSION ====================
 async function saveOrder(orderData) {
     if (!currentUser) {
         showToast('You must be logged in to save orders', 'error');
@@ -1831,84 +1837,154 @@ async function saveOrder(orderData) {
     }
     
     try {
-        // Add metadata
-        orderData.userId = currentUser.uid;
-        orderData.createdAt = new Date().toISOString();
-        orderData.updatedAt = new Date().toISOString();
+        // Generate a readable order number
+        const orderNumber = generateOrderId();
+        
+        // Prepare order data for Firestore
+        const orderToSave = {
+            ...orderData,
+            orderNumber: orderNumber,  // Human-readable order number
+            userId: currentUser.uid,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            status: 'pending'
+        };
+        
+        console.log('Saving order to Firestore:', orderToSave);
         
         // Add to Firestore
-        const docRef = await firebaseFirestore.collection('orders').add(orderData);
+        const db = firebase.firestore();
+        const docRef = await db.collection('orders').add(orderToSave);
         
-        // Update local array
-        orderData.id = docRef.id;
-        orders.unshift(orderData);
+        console.log('Order saved with Firestore ID:', docRef.id);
+        
+        // Update local array with Firestore ID
+        const savedOrder = {
+            ...orderToSave,
+            id: docRef.id,  // Firestore document ID
+            firestoreId: docRef.id,
+            localId: orderNumber  // Keep local order number
+        };
+        
+        orders.unshift(savedOrder);
         
         // Save to localStorage as backup
         saveLocalData();
         
-        showToast(`Order ${orderData.id} created successfully!`, 'success');
+        showToast(`Order ${orderNumber} created successfully!`, 'success');
         
         // Play notification sound
         if (soundEnabled) playNotificationSound();
         
-        return docRef.id;
+        return { firestoreId: docRef.id, orderNumber: orderNumber };
         
     } catch (error) {
-        console.error('Error saving order:', error);
-        showToast('Error saving order to database', 'error');
+        console.error('Error saving order to Firestore:', error);
         
         // Fallback to localStorage
-        orderData.id = orderData.id || 'local-' + Date.now();
+        const orderNumber = generateOrderId();
+        orderData.id = 'local-' + Date.now();
+        orderData.orderNumber = orderNumber;
         orderData.userId = currentUser.uid;
+        orderData.createdAt = new Date().toISOString();
+        orderData.updatedAt = new Date().toISOString();
+        orderData.status = 'pending';
         orders.unshift(orderData);
         saveLocalData();
         
-        return orderData.id;
+        showToast(`Order ${orderNumber} saved locally (offline mode)`, 'warning');
+        
+        return { firestoreId: null, orderNumber: orderNumber };
     }
 }
 
 async function updateOrderStatus(orderId, newStatus) {
+    console.log('Firebase: Updating order status:', orderId, '->', newStatus);
+    
     if (!currentUser) {
         showToast('You must be logged in', 'error');
         return;
     }
     
     try {
-        const orderRef = firebaseFirestore.collection('orders').doc(orderId);
+        // Find the order in local array
+        const order = orders.find(o => o.id === orderId || o.firestoreId === orderId || o.orderNumber === orderId);
         
-        // First, get the current order to check ownership
-        const orderDoc = await orderRef.get();
-        
-        if (!orderDoc.exists) {
+        if (!order) {
+            console.error('Order not found in local array:', orderId);
+            console.log('Available orders:', orders.map(o => ({ 
+                id: o.id, 
+                firestoreId: o.firestoreId,
+                orderNumber: o.orderNumber 
+            })));
             showToast('Order not found', 'error');
             return;
         }
         
-        // Check if the order belongs to the current user
-        const orderData = orderDoc.data();
-        if (orderData.userId !== currentUser.uid) {
-            showToast('Access denied: This order belongs to another user', 'error');
+        // Check if we're in offline mode
+        if (currentUser.uid === 'local-user-offline' || !order.firestoreId) {
+            // Update locally only
+            order.status = newStatus;
+            order.updatedAt = new Date().toISOString();
+            if (newStatus === 'completed') {
+                order.completedTime = new Date().toISOString();
+            }
+            
+            saveLocalData();
+            updateDashboard();
+            displayOrders();
+            updateKitchenView();
+            
+            showToast(`Order ${order.orderNumber} updated to ${newStatus} (offline)`, 'success');
             return;
         }
         
-        // Update the order
+        // Update in Firestore
+        const db = firebase.firestore();
+        const orderRef = db.collection('orders').doc(order.firestoreId || order.id);
+        
+        console.log('Updating in Firestore with ID:', order.firestoreId || order.id);
+        
+        // Verify the order belongs to current user
+        const orderDoc = await orderRef.get();
+        if (!orderDoc.exists) {
+            console.error('Order not found in Firestore');
+            showToast('Order not found in database', 'error');
+            return;
+        }
+        
+        const orderData = orderDoc.data();
+        if (orderData.userId !== currentUser.uid) {
+            console.error('Access denied. User:', currentUser.uid, 'Order user:', orderData.userId);
+            showToast('Access denied', 'error');
+            return;
+        }
+        
+        // Perform the update
         await orderRef.update({
             status: newStatus,
             updatedAt: new Date().toISOString(),
             ...(newStatus === 'completed' ? { completedTime: new Date().toISOString() } : {})
         });
         
-        // Update local array
-        const orderIndex = orders.findIndex(o => o.id === orderId);
-        if (orderIndex !== -1) {
-            orders[orderIndex].status = newStatus;
-            orders[orderIndex].updatedAt = new Date().toISOString();
-            if (newStatus === 'completed') {
-                orders[orderIndex].completedTime = new Date().toISOString();
-            }
+        console.log('Order updated successfully in Firestore');
+        
+        // Update local copy
+        order.status = newStatus;
+        order.updatedAt = new Date().toISOString();
+        if (newStatus === 'completed') {
+            order.completedTime = new Date().toISOString();
         }
         
-        showToast(`Order ${orderId} marked as ${newStatus}`, 'success');
+        // Save to localStorage
+        saveLocalData();
+        
+        // Update UI (real-time listener will also update, but we update immediately)
+        updateDashboard();
+        displayOrders();
+        updateKitchenView();
+        
+        showToast(`Order ${order.orderNumber} marked as ${newStatus}`, 'success');
         
         // Play sound for kitchen updates
         if (soundEnabled && (newStatus === 'preparing' || newStatus === 'ready')) {
@@ -1916,7 +1992,7 @@ async function updateOrderStatus(orderId, newStatus) {
         }
         
     } catch (error) {
-        console.error('Error updating order:', error);
+        console.error('Firebase error updating order:', error);
         
         if (error.code === 'permission-denied') {
             showToast('Permission denied: Check your Firestore security rules', 'error');
@@ -1924,6 +2000,23 @@ async function updateOrderStatus(orderId, newStatus) {
             showToast('Order not found in database', 'error');
         } else {
             showToast(`Error: ${error.message}`, 'error');
+        }
+        
+        // Fallback to local update
+        const order = orders.find(o => o.id === orderId || o.firestoreId === orderId || o.orderNumber === orderId);
+        if (order) {
+            order.status = newStatus;
+            order.updatedAt = new Date().toISOString();
+            if (newStatus === 'completed') {
+                order.completedTime = new Date().toISOString();
+            }
+            
+            saveLocalData();
+            updateDashboard();
+            displayOrders();
+            updateKitchenView();
+            
+            showToast(`Order ${order.orderNumber} updated locally`, 'warning');
         }
     }
 }
@@ -2173,12 +2266,11 @@ function createNewOrder() {
         return;
     }
     
-    const orderId = generateOrderId();
     const orderType = document.getElementById('order-type').value;
     const isDelivery = orderType.includes('delivery') || document.getElementById('delivery-address').value.trim() !== '';
     
     const newOrder = {
-        id: orderId,
+        orderNumber: generateOrderId(),  // Human-readable ID
         customer: customerName,
         phone: document.getElementById('customer-phone').value || '',
         type: orderType,
@@ -2217,7 +2309,7 @@ function generateOrderId() {
     const dateStr = now.getFullYear().toString().substr(-2) + 
                   (now.getMonth() + 1).toString().padStart(2, '0') + 
                   now.getDate().toString().padStart(2, '0');
-    const count = orders.filter(o => o.id && o.id.includes(dateStr)).length + 1;
+    const count = orders.filter(o => o.orderNumber && o.orderNumber.includes(dateStr)).length + 1;
     return `${prefix}-${dateStr}-${count.toString().padStart(3, '0')}`;
 }
 
@@ -2383,7 +2475,7 @@ function updateRecentOrdersTable() {
         
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>${order.id || 'N/A'}</td>
+            <td>${order.orderNumber || order.id || 'N/A'}</td>
             <td>${order.customer || 'Unknown'}</td>
             <td>${formatOrderType(order.type)}</td>
             <td>${itemCount} items</td>
@@ -2469,9 +2561,12 @@ function createOrderCard(order) {
         });
     }
     
+    // Use Firestore ID for button actions
+    const buttonId = order.firestoreId || order.id;
+    
     card.innerHTML = `
         <div class="order-header">
-            <div class="order-id">${order.id || 'N/A'}</div>
+            <div class="order-id">${order.orderNumber || order.id || 'N/A'}</div>
             <div class="order-time">${dateString} ${timeString}</div>
         </div>
         <div class="order-items">
@@ -2486,10 +2581,10 @@ function createOrderCard(order) {
                 <span class="status-badge status-${order.status || 'pending'}">${order.status || 'pending'}</span>
             </div>
             <div class="action-buttons">
-                ${order.status === 'pending' ? '<button class="btn btn-small btn-success approve-btn" data-id="${order.id}">Accept</button>' : ''}
-                ${order.status === 'preparing' ? '<button class="btn btn-small btn-warning ready-btn" data-id="${order.id}">Mark Ready</button>' : ''}
-                ${order.status === 'ready' ? '<button class="btn btn-small btn-success complete-btn" data-id="${order.id}">Complete</button>' : ''}
-                ${order.status !== 'completed' && order.status !== 'cancelled' ? '<button class="btn btn-small btn-secondary cancel-btn" data-id="${order.id}">Cancel</button>' : ''}
+                ${order.status === 'pending' ? `<button class="btn btn-small btn-success approve-btn" data-id="${buttonId}">Accept</button>` : ''}
+                ${order.status === 'preparing' ? `<button class="btn btn-small btn-warning ready-btn" data-id="${buttonId}">Mark Ready</button>` : ''}
+                ${order.status === 'ready' ? `<button class="btn btn-small btn-success complete-btn" data-id="${buttonId}">Complete</button>` : ''}
+                ${order.status !== 'completed' && order.status !== 'cancelled' ? `<button class="btn btn-small btn-secondary cancel-btn" data-id="${buttonId}">Cancel</button>` : ''}
             </div>
         </div>
         <div class="mt-10" style="font-size: 0.9rem; color: var(--light-gray);">
@@ -2501,12 +2596,6 @@ function createOrderCard(order) {
     `;
     
     return card;
-}
-
-function updateAllOrderDisplays() {
-    displayOrders();
-    updateDashboard();
-    updateKitchenView();
 }
 
 // ==================== KITCHEN VIEW FUNCTIONS ====================
@@ -2574,9 +2663,12 @@ function createKitchenOrderCard(order) {
         });
     }
     
+    // Use Firestore ID for button actions
+    const buttonId = order.firestoreId || order.id;
+    
     card.innerHTML = `
         <div class="order-header">
-            <div class="order-id">${order.id || 'N/A'}</div>
+            <div class="order-id">${order.orderNumber || order.id || 'N/A'}</div>
             <div class="order-time">${timeString} (${elapsedMinutes}m ago)</div>
         </div>
         ${timerDisplay}
@@ -2592,10 +2684,10 @@ function createKitchenOrderCard(order) {
         </div>
         <div class="action-buttons mt-20">
             ${!isReady ? `
-                <button class="btn btn-small btn-success ready-btn" data-id="${order.id}">Mark Ready</button>
-                <button class="btn btn-small btn-warning" onclick="addTimeToOrder('${order.id}', 5)">+5 min</button>
+                <button class="btn btn-small btn-success ready-btn" data-id="${buttonId}">Mark Ready</button>
+                <button class="btn btn-small btn-warning" onclick="addTimeToOrder('${buttonId}', 5)">+5 min</button>
             ` : ''}
-            <button class="btn btn-small btn-success complete-btn" data-id="${order.id}">Complete Order</button>
+            <button class="btn btn-small btn-success complete-btn" data-id="${buttonId}">Complete Order</button>
         </div>
     `;
     
@@ -3241,25 +3333,35 @@ function initEventListeners() {
         if (e.target.classList.contains('approve-btn') || e.target.closest('.approve-btn')) {
             const btn = e.target.classList.contains('approve-btn') ? e.target : e.target.closest('.approve-btn');
             const orderId = btn.dataset.id;
-            if (orderId) updateOrderStatus(orderId, 'preparing');
+            if (orderId) {
+                console.log('Accept button clicked for order:', orderId);
+                updateOrderStatus(orderId, 'preparing');
+            }
         }
         
         if (e.target.classList.contains('ready-btn') || e.target.closest('.ready-btn')) {
             const btn = e.target.classList.contains('ready-btn') ? e.target : e.target.closest('.ready-btn');
             const orderId = btn.dataset.id;
-            if (orderId) updateOrderStatus(orderId, 'ready');
+            if (orderId) {
+                console.log('Ready button clicked for order:', orderId);
+                updateOrderStatus(orderId, 'ready');
+            }
         }
         
         if (e.target.classList.contains('complete-btn') || e.target.closest('.complete-btn')) {
             const btn = e.target.classList.contains('complete-btn') ? e.target : e.target.closest('.complete-btn');
             const orderId = btn.dataset.id;
-            if (orderId) updateOrderStatus(orderId, 'completed');
+            if (orderId) {
+                console.log('Complete button clicked for order:', orderId);
+                updateOrderStatus(orderId, 'completed');
+            }
         }
         
         if (e.target.classList.contains('cancel-btn') || e.target.closest('.cancel-btn')) {
             const btn = e.target.classList.contains('cancel-btn') ? e.target : e.target.closest('.cancel-btn');
             const orderId = btn.dataset.id;
             if (orderId && confirm('Are you sure you want to cancel this order?')) {
+                console.log('Cancel button clicked for order:', orderId);
                 updateOrderStatus(orderId, 'cancelled');
             }
         }
@@ -3392,7 +3494,7 @@ function initEventListeners() {
             const itemCount = order.items ? order.items.reduce((sum, item) => sum + (item.quantity || 0), 0) : 0;
             const date = order.timestamp ? new Date(order.timestamp).toLocaleDateString('en-GB') : 'N/A';
             
-            csv += `"${order.id || 'N/A'}","${order.customer || 'Unknown'}","${formatOrderType(order.type)}",${itemCount},£${(order.total || 0).toFixed(2)},"${order.status || 'pending'}","${date}"\n`;
+            csv += `"${order.orderNumber || order.id || 'N/A'}","${order.customer || 'Unknown'}","${formatOrderType(order.type)}",${itemCount},£${(order.total || 0).toFixed(2)},"${order.status || 'pending'}","${date}"\n`;
         });
         
         const blob = new Blob([csv], { type: 'text/csv' });
@@ -3418,7 +3520,6 @@ window.removeItemFromOrder = function(index) {
 };
 
 window.addTimeToOrder = function(orderId, minutes) {
-    // This would update the order timestamp in Firestore
     showToast('Feature coming soon', 'info');
 };
 
@@ -3532,8 +3633,43 @@ function restoreData() {
     input.click();
 }
 
+// ==================== FIREBASE SECURITY DEBUG ====================
+function testFirebaseConnection() {
+    console.log('=== Testing Firebase Connection ===');
+    console.log('Current User:', currentUser?.uid);
+    console.log('Firebase App:', firebaseApp ? 'Initialized' : 'Not initialized');
+    console.log('Firestore:', firebaseFirestore ? 'Available' : 'Not available');
+    
+    if (currentUser && firebaseFirestore) {
+        // Try to read from Firestore
+        firebaseFirestore.collection('orders')
+            .where('userId', '==', currentUser.uid)
+            .limit(1)
+            .get()
+            .then(snapshot => {
+                console.log('Firestore read test:', snapshot.empty ? 'No orders found' : 'Connected successfully');
+                showToast('Firebase connection successful', 'success');
+            })
+            .catch(error => {
+                console.error('Firestore error:', error);
+                showToast(`Firebase error: ${error.message}`, 'error');
+            });
+    }
+}
+
 // ==================== INITIALIZE ====================
-console.log('Fish Bar Management System v2.0 Initialized');
+console.log('Fish Bar Management System v2.0 Initialized with Firebase Fixes');
+
+// Add test button for debugging (optional)
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(() => {
+        const debugBtn = document.createElement('button');
+        debugBtn.textContent = 'Debug Firebase';
+        debugBtn.style.cssText = 'position: fixed; bottom: 10px; right: 10px; z-index: 9999; padding: 5px 10px; background: #333; color: white; border: none; border-radius: 3px;';
+        debugBtn.onclick = testFirebaseConnection;
+        document.body.appendChild(debugBtn);
+    }, 1000);
+});
 </script>
 </body>
 </html>
